@@ -1,0 +1,222 @@
+/* ── Reset & base ─────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg: #0c0c0f;
+  --surface: #16161a;
+  --text: #ececf1;
+  --dim: #72727e;
+  --accent: #00ff88;
+  --danger: #ff4d4d;
+  --info: #3b82f6;
+  --radius: 12px;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Layout ───────────────────────────────────────────────── */
+.app {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 24px 16px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.header {
+  text-align: center;
+}
+.header h1 {
+  font-size: 2rem;
+  color: var(--accent);
+  letter-spacing: -0.5px;
+}
+.subtitle {
+  color: var(--dim);
+  font-size: 0.9rem;
+}
+
+.center-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+
+/* ── Buttons ──────────────────────────────────────────────── */
+.btn {
+  border: none;
+  border-radius: var(--radius);
+  padding: 12px 28px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.btn:hover {
+  opacity: 0.85;
+}
+.btn.primary {
+  background: var(--accent);
+  color: #000;
+}
+
+/* ── Banners ──────────────────────────────────────────────── */
+.banner {
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  text-align: center;
+}
+.banner.error {
+  background: rgba(255, 77, 77, 0.15);
+  color: var(--danger);
+}
+.banner.info {
+  background: rgba(59, 130, 246, 0.15);
+  color: var(--info);
+}
+
+/* ── Camera ───────────────────────────────────────────────── */
+.camera-wrap {
+  position: relative;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: #000;
+  line-height: 0; /* remove inline spacing below video */
+}
+
+.camera-feed {
+  width: 100%;
+  display: block;
+  transform: scaleX(-1); /* mirror so it feels natural */
+}
+
+.skeleton-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  transform: scaleX(-1); /* match video mirror */
+}
+
+/* ── Overlay boxes (calibration, countdown, done) ─────────── */
+.overlay-box {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  translate: -50% 0;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(8px);
+  padding: 14px 24px;
+  border-radius: var(--radius);
+  text-align: center;
+  font-size: 0.95rem;
+  min-width: 200px;
+}
+.overlay-box.prompts p {
+  color: var(--danger);
+}
+.overlay-box.prompts p.ok {
+  color: var(--accent);
+}
+.overlay-box.countdown {
+  font-size: 4rem;
+  font-weight: 700;
+  color: var(--accent);
+  padding: 20px 48px;
+}
+.overlay-box.done {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* ── Capture progress ─────────────────────────────────────── */
+.capture-bar-wrap {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 32px;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+}
+.capture-bar {
+  height: 100%;
+  background: var(--accent);
+  opacity: 0.7;
+  transition: width 0.1s linear;
+}
+.capture-label {
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* ── Step card ────────────────────────────────────────────── */
+.step-card {
+  background: var(--surface);
+  padding: 20px;
+  border-radius: var(--radius);
+}
+.step-card h2 {
+  font-size: 1.1rem;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+.step-card p {
+  color: var(--dim);
+}
+
+/* ── Results card ─────────────────────────────────────────── */
+.results-card {
+  background: var(--surface);
+  padding: 24px;
+  border-radius: var(--radius);
+}
+.results-card h2 {
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+.results-card ul {
+  list-style: none;
+  margin: 12px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.results-card li {
+  color: var(--dim);
+  font-size: 0.9rem;
+}
+.results-card li::before {
+  content: '✓ ';
+  color: var(--accent);
+}
+.results-card .btn {
+  margin-top: 16px;
+}
