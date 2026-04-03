@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Camera, ChevronRight, AlertCircle, RotateCcw } from 'lucide-react'
@@ -10,14 +10,23 @@ import { SafetyDisclaimer } from '@/components/layout/SafetyDisclaimer'
 import { PageTransition } from '@/components/layout/PageTransition'
 import { useCamera } from '@/hooks/useCamera'
 import { usePoseEngine } from '@/hooks/usePoseEngine'
+import { useOverlayRenderer } from '@/hooks/useOverlayRenderer'
 import { useAssessmentStore } from '@/store'
 import { ROUTES } from '@/lib/constants'
 
 export default function CameraSetup() {
   const navigate = useNavigate()
   const { videoRef, state: cameraState, startCamera, stopCamera } = useCamera('user')
+  const canvasRef = useRef<HTMLCanvasElement>(null)
   const { initEngine, calibration, isInitializing } = usePoseEngine(videoRef)
   const startAssessment = useAssessmentStore((s) => s.startAssessment)
+
+  // Task 6 — calibration skeleton overlay
+  useOverlayRenderer({
+    canvasRef,
+    videoRef,
+    enabled: cameraState.permission === 'granted',
+  })
 
   // Start camera on mount
   useEffect(() => {
@@ -80,7 +89,7 @@ export default function CameraSetup() {
                 stream={cameraState.stream}
                 className="w-full h-full object-cover"
               />
-              <PoseCanvas className="absolute inset-0" />
+              <PoseCanvas ref={canvasRef} className="absolute inset-0" />
               <CalibrationOverlay calibration={calibration} isInitializing={isInitializing} />
             </>
           )}

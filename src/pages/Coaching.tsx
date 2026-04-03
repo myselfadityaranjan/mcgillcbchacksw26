@@ -13,6 +13,7 @@ import { StatusBar } from '@/components/ui/StatusIndicator'
 import { MetricPill } from '@/components/ui/MetricPill'
 import { useCamera } from '@/hooks/useCamera'
 import { useCoaching } from '@/hooks/useCoaching'
+import { useOverlayRenderer } from '@/hooks/useOverlayRenderer'
 import { useCoachingStore } from '@/store'
 import { getDrillById } from '@/data/drills'
 import { cn } from '@/lib/cn'
@@ -95,6 +96,13 @@ export default function Coaching() {
 
   const drill = drillId ? getDrillById(drillId) : null
 
+  // Task 6 — overlay renderer
+  const { pushCoachingFrame } = useOverlayRenderer({
+    canvasRef,
+    videoRef,
+    enabled: cameraState.permission === 'granted',
+  })
+
   // Start camera
   useEffect(() => {
     startCamera()
@@ -110,7 +118,7 @@ export default function Coaching() {
   const stableOnFrame = useCallback(onFrame, [onFrame])
   useMockCoachingEngine(drill?.id as DrillId ?? null, stableOnFrame)
 
-  // Track reps when quality returns to green
+  // Track reps when quality returns to green; also push overlay state
   const prevQualityRef = useRef<string | null>(null)
   useEffect(() => {
     if (!currentFrame) return
@@ -118,7 +126,17 @@ export default function Coaching() {
       setRepCount((r) => r + 1)
     }
     prevQualityRef.current = currentFrame.quality
-  }, [currentFrame])
+
+    // Task 6 — push real frame landmarks to the overlay renderer.
+    // currentFrame.frame.landmarks is the raw landmark array from Person 1.
+    // If it's empty (mock mode), the renderer falls back to mock landmarks.
+    pushCoachingFrame(
+      currentFrame.quality,
+      currentFrame.activeCue,
+      currentFrame.frame.landmarks.length > 0 ? currentFrame.frame.landmarks : null,
+      currentFrame.frame.confidence
+    )
+  }, [currentFrame, pushCoachingFrame])
 
   if (!drill) {
     return (

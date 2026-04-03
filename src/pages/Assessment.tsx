@@ -11,6 +11,7 @@ import { AssessmentProgress } from '@/components/assessment/AssessmentProgress'
 import { StepTransition } from '@/components/layout/PageTransition'
 import { useCamera } from '@/hooks/useCamera'
 import { usePoseEngine } from '@/hooks/usePoseEngine'
+import { useOverlayRenderer } from '@/hooks/useOverlayRenderer'
 import { useAssessmentStore, selectCurrentStep } from '@/store'
 import { ROUTES } from '@/lib/constants'
 
@@ -21,6 +22,13 @@ export default function Assessment() {
   const { videoRef, state: cameraState, startCamera, stopCamera } = useCamera('user')
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const { initEngine, startCapture, stopCapture } = usePoseEngine(videoRef)
+
+  // Task 6 — overlay renderer (assessment mode: no quality glow, show skeleton + alignment)
+  useOverlayRenderer({
+    canvasRef,
+    videoRef,
+    enabled: cameraState.permission === 'granted',
+  })
 
   const {
     session,
