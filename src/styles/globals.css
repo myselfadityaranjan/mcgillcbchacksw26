@@ -1,0 +1,128 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Design tokens as CSS custom properties ─────────────────────────────── */
+:root {
+  --color-bg: #060812;
+  --color-surface-1: #0D1117;
+  --color-surface-2: #161B27;
+  --color-surface-3: #1E2433;
+
+  --color-border: rgba(99, 120, 186, 0.12);
+  --color-border-strong: rgba(99, 120, 186, 0.25);
+
+  --color-primary: #4F8EF7;
+  --color-success: #10E07C;
+  --color-warning: #FFB72B;
+  --color-danger: #FF4757;
+
+  --color-text-1: #E8EDF8;
+  --color-text-2: #8A95B0;
+  --color-text-3: #4A5568;
+
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  color-scheme: dark;
+}
+
+/* ─── Base resets ─────────────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text-1);
+  font-family: var(--font-sans);
+  font-feature-settings: 'cv11', 'ss01';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100dvh;
+}
+
+/* ─── Scrollbar styling ───────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(99, 120, 186, 0.2);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 120, 186, 0.4);
+}
+
+/* ─── Focus styles ────────────────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ─── Typography ──────────────────────────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--color-text-1);
+}
+
+/* ─── Selection ───────────────────────────────────────────────────────────── */
+::selection {
+  background-color: rgba(79, 142, 247, 0.3);
+  color: var(--color-text-1);
+}
+
+/* ─── Video element ───────────────────────────────────────────────────────── */
+video {
+  display: block;
+}
+
+/* ─── Utility: hide scrollbar but keep scroll ────────────────────────────── */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* ─── Shimmer skeleton animation ─────────────────────────────────────────── */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 25%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.04) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* ─── Canvas layer ────────────────────────────────────────────────────────── */
+canvas.pose-overlay {
+  image-rendering: pixelated;
+}
