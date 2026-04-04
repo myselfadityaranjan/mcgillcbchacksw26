@@ -1,6 +1,8 @@
 // ──────────────────────────────────────────────────────────────
 // liveCoach.ts — per-frame live coaching logic (Task 4)
 //   landmarks → CoachingFrame
+//   Includes hysteresis to prevent state flickering and
+//   exponential smoothing on the quality score.
 // ──────────────────────────────────────────────────────────────
 
 import type { NormalizedLandmark } from '../types/pose';
@@ -9,18 +11,47 @@ import type { DrillId } from '../types/plan';
 import { DRILL_THRESHOLDS } from './drillThresholds';
 import { selectCue } from './cueEngine';
 
-// ── Form state classification ────────────────────────────────
+// ── Hysteresis-aware classification ──────────────────────────
+
+/**
+ * Previous metric states are used for hysteresis: a metric must
+ * exceed the NEXT threshold by a small margin before it changes
+ * state, preventing rapid flickering at boundary values.
+ */
+const HYSTERESIS = 0.006; // ~0.6% of normalised coordinate space
+
+let prevMetricStates: Record<string, 'green' | 'yellow' | 'red'> = {};
 
 function classifyMetric(
+  key: string,
   value: number,
   threshold: { green: number; yellow: number },
 ): 'green' | 'yellow' | 'red' {
-  if (value <= threshold.green) return 'green';
-  if (value <= threshold.yellow) return 'yellow';
+  const prev = prevMetricStates[key] ?? 'green';
+
+  // Tighten the threshold for leaving a state (hysteresis)
+  if (prev === 'green') {
+    if (value > threshold.green + HYSTERESIS) {
+      return value > threshold.yellow + HYSTERESIS ? 'red' : 'yellow';
+    }
+    return 'green';
+  }
+  if (prev === 'yellow') {
+    if (value <= threshold.green - HYSTERESIS) return 'green';
+    if (value > threshold.yellow + HYSTERESIS) return 'red';
+    return 'yellow';
+  }
+  // prev === 'red'
+  if (value <= threshold.yellow - HYSTERESIS) {
+    return value <= threshold.green - HYSTERESIS ? 'green' : 'yellow';
+  }
   return 'red';
 }
 
-// ── Quality score ────────────────────────────────────────────
+// ── Quality score with exponential smoothing ─────────────────
+
+let smoothedScore = 100;
+const SMOOTH_FACTOR = 0.25; // 0 = frozen, 1 = instant
 
 function computeQuality(
   metricStates: Record<string, 'green' | 'yellow' | 'red'>,
@@ -28,14 +59,15 @@ function computeQuality(
   const values = Object.values(metricStates);
   if (values.length === 0) return 100;
 
-  const score =
+  const rawScore =
     values.reduce((sum, s) => {
       if (s === 'green') return sum + 100;
       if (s === 'yellow') return sum + 50;
       return sum;
     }, 0) / values.length;
 
-  return Math.round(score);
+  smoothedScore = smoothedScore * (1 - SMOOTH_FACTOR) + rawScore * SMOOTH_FACTOR;
+  return Math.round(smoothedScore);
 }
 
 // ── Overall form state ────────────────────────────────────────
@@ -49,12 +81,15 @@ function overallFormState(
   return 'green';
 }
 
+// ── Reset (call when starting a new session) ──────────────────
+
+export function resetCoachState(): void {
+  prevMetricStates = {};
+  smoothedScore = 100;
+}
+
 // ── Main per-frame function ───────────────────────────────────
 
-/**
- * Evaluate a single frame of pose data against the drill thresholds.
- * Returns null if the drill is not recognised or no landmarks are present.
- */
 export function evaluateFrame(
   drillId: DrillId,
   landmarks: NormalizedLandmark[],
@@ -68,8 +103,10 @@ export function evaluateFrame(
   for (const [key, value] of Object.entries(metrics)) {
     const threshold = definition.thresholds[key];
     if (!threshold) continue;
-    metricStates[key] = classifyMetric(value, threshold);
+    metricStates[key] = classifyMetric(key, value, threshold);
   }
+
+  prevMetricStates = { ...metricStates };
 
   const redMetrics = Object.entries(metricStates)
     .filter(([, s]) => s === 'red')

@@ -27,6 +27,15 @@ export function DrillDetailPage() {
 
       <div className="drill-detail-body">
         <div className="detail-block">
+          <h3>Targets</h3>
+          <div className="drill-target-issues">
+            {drill.targetIssues.map((id) => (
+              <span key={id} className="drill-target-tag">{id.replace(/-/g, ' ')}</span>
+            ))}
+          </div>
+        </div>
+
+        <div className="detail-block">
           <h3>Setup</h3>
           <p>{drill.setupInstructions}</p>
         </div>

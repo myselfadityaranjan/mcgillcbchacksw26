@@ -151,7 +151,7 @@ body {
   width: 100%;
   height: 100%;
   pointer-events: none;
-  transform: scaleX(-1);
+  /* NO scaleX(-1) — landmarks are mirrored in code so canvas text renders correctly */
 }
 
 /* ── Overlay boxes ──────────────────────────────────────────── */
@@ -395,6 +395,12 @@ body {
   padding: 4px 14px;
   font-size: 0.8rem;
   color: var(--dim);
+  transition: background var(--transition), color var(--transition), border-color var(--transition);
+}
+.analyzing-steps span.active {
+  background: rgba(0,255,136,0.1);
+  color: var(--green);
+  border-color: rgba(0,255,136,0.3);
 }
 
 /* ── Results ────────────────────────────────────────────────── */
@@ -444,6 +450,93 @@ body {
 .issue-evidence { margin-top: 6px; display: flex; flex-direction: column; gap: 6px; }
 .evidence-img   { width: 100%; border-radius: var(--radius-sm); max-height: 200px; object-fit: cover; transform: scaleX(-1); }
 .evidence-label { font-size: 0.76rem; color: var(--dim); text-transform: capitalize; }
+
+/* Confidence meter */
+.confidence-meter {
+  position: relative;
+  height: 6px;
+  background: var(--surface2);
+  border-radius: 100px;
+  overflow: hidden;
+}
+.confidence-bar {
+  height: 100%;
+  background: var(--green);
+  border-radius: 100px;
+  transition: width 0.3s ease;
+}
+.confidence-label {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.76rem;
+  color: var(--dim);
+}
+
+/* Metric readout */
+.metric-readout {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+}
+.metric-item {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  font-size: 0.78rem;
+}
+.metric-name  { color: var(--dim); text-transform: capitalize; }
+.metric-value { color: var(--text); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* Evidence canvas */
+.evidence-wrap {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.evidence-canvas {
+  width: 100%;
+  border-radius: var(--radius-sm);
+  max-height: 220px;
+  object-fit: contain;
+}
+
+/* Drill target tags */
+.drill-targets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.drill-target-tag {
+  font-size: 0.72rem;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  padding: 2px 10px;
+  color: var(--dim);
+  text-transform: capitalize;
+}
+
+/* Drill urgency */
+.drill-card.urgent { border-left: 3px solid var(--red); }
+.drill-card.moderate { border-left: 3px solid var(--yellow); }
+
+.drill-target-issues {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Data quality banner */
+.banner.error {
+  background: rgba(255,68,68,0.1);
+  border: 1px solid rgba(255,68,68,0.3);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  font-size: 0.88rem;
+  color: var(--red);
+  line-height: 1.5;
+}
 
 /* Drill cards */
 .drill-card {
@@ -604,11 +697,13 @@ body {
 .form-green  .quality-dot { background: var(--green); box-shadow: 0 0 8px var(--green); }
 .form-yellow .quality-dot { background: var(--yellow); box-shadow: 0 0 8px var(--yellow); }
 .form-red    .quality-dot { background: var(--red); box-shadow: 0 0 8px var(--red); }
+.form-lost   .quality-dot { background: var(--dim); box-shadow: none; animation: pulse 1.2s ease infinite alternate; }
 
 .quality-label { font-size: 0.92rem; font-weight: 600; }
 .form-green  .quality-label { color: var(--green); }
 .form-yellow .quality-label { color: var(--yellow); }
 .form-red    .quality-label { color: var(--red); }
+.form-lost   .quality-label { color: var(--dim); }
 
 .quality-score {
   font-size: 1.6rem;

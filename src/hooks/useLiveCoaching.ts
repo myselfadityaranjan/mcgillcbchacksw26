@@ -4,7 +4,7 @@
 // ──────────────────────────────────────────────────────────────
 
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { evaluateFrame } from '../lib/liveCoach';
+import { evaluateFrame, resetCoachState } from '../lib/liveCoach';
 import { renderOverlay } from '../lib/overlayRenderer';
 import { finaliseSession } from '../lib/qualityScore';
 import type { PoseDetectionResult } from '../lib/poseEngine';
@@ -60,6 +60,8 @@ export function useLiveCoaching({
     inYellowRef.current = 0;
     inRedRef.current = 0;
     lastCueRef.current = null;
+    lastFrameTs.current = 0;
+    resetCoachState();
     setCurrentFrame(null);
     setSession(null);
     setElapsed(0);

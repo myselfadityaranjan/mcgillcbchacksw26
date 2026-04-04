@@ -72,5 +72,7 @@ export interface PostureMetrics {
 export interface AnalysisResult {
   issues: DetectedIssue[];
   metrics: PostureMetrics;
+  /** 0–1: fraction of assessment steps with usable data */
+  dataQuality: number;
   analyzedAt: number;
 }

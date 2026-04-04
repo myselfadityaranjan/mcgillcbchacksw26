@@ -86,6 +86,13 @@ const DRILL_CUES: Record<DrillId, CueRule[]> = {
       text: 'Square your shoulders — keep them level, do not rotate',
       affectedLandmarks: [LM.LEFT_SHOULDER, LM.RIGHT_SHOULDER],
     },
+    {
+      metric: 'kneeDropDepth',
+      priority: 'major',
+      text: 'Drop your back knee lower — sink deeper into the stretch',
+      affectedLandmarks: [LM.LEFT_KNEE, LM.LEFT_HIP],
+      arrows: [{ fromLandmark: LM.LEFT_KNEE, dx: 0, dy: 0.1 }],
+    },
   ],
 
   'squat-alignment-drill': [

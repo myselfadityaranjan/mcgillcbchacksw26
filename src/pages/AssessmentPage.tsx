@@ -18,7 +18,7 @@ export function AssessmentPage({ videoRef, detect }: AssessmentPageProps) {
   const { completeAssessment } = useApp();
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const { state, calibration, result, start, reset } = useAssessment({
+  const { state, calibration, result, detectionLost, start, reset } = useAssessment({
     videoRef,
     canvasRef,
     detect,
@@ -102,6 +102,13 @@ export function AssessmentPage({ videoRef, detect }: AssessmentPageProps) {
           <div className="overlay-box step-done">
             <span className="step-done-check">✓</span>
             <p>Step {state.completedSteps} done</p>
+          </div>
+        )}
+
+        {/* Detection lost warning */}
+        {detectionLost && !showCalibration && !showComplete && (
+          <div className="overlay-box prompts warn">
+            <p className="prompt-line">Body not detected — ensure you're fully in frame</p>
           </div>
         )}
       </div>

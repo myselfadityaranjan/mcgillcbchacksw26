@@ -26,8 +26,10 @@ export interface DrillThresholds {
 
 // ── Helpers ──────────────────────────────────────────────────
 
+const ZERO_LM: NormalizedLandmark = { x: 0, y: 0, z: 0, visibility: 0 };
+
 function lm(lms: NormalizedLandmark[], idx: number): NormalizedLandmark {
-  return lms[idx]!;
+  return lms[idx] ?? ZERO_LM;
 }
 
 // ── Per-drill definitions ─────────────────────────────────────
@@ -122,8 +124,7 @@ const hipFlexorStretch: DrillThresholds = {
   thresholds: {
     torsoLean:        { green: 0.04,  yellow: 0.08 },
     shoulderSymmetry: { green: 0.025, yellow: 0.05 },
-    // For kneeDropDepth we INVERT the check — low value = not deep enough
-    // We handle this specially in liveCoach: 0 means no issue
+    kneeDropDepth:    { green: 0.04,  yellow: 0.08 },
   },
 };
 

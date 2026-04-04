@@ -9,6 +9,7 @@ import { AssessmentFlow } from '../lib/assessmentFlow';
 import { checkCalibration, computeStability } from '../lib/calibration';
 import { captureVideoFrame } from '../lib/snapshot';
 import { renderAssessmentOverlay } from '../lib/overlayRenderer';
+import { speakInstruction } from '../lib/voiceCoach';
 import type { PoseDetectionResult } from '../lib/poseEngine';
 import type {
   AssessmentState,
@@ -26,6 +27,9 @@ export interface UseAssessmentOptions {
   /** Only run the rAF loop when camera + model are both ready */
   enabled: boolean;
 }
+
+/** Max time (ms) in calibrating with no detection before showing warning */
+const CALIBRATION_TIMEOUT = 20_000;
 
 // ── Hook ─────────────────────────────────────────────────────
 
@@ -47,14 +51,17 @@ export function useAssessment({
     NormalizedLandmark[] | null
   >(null);
   const [result, setResult] = useState<AssessmentResult | null>(null);
+  const [detectionLost, setDetectionLost] = useState(false);
 
   // History ring-buffer for stability computation
   const historyRef = useRef<NormalizedLandmark[][]>([]);
   const rafRef = useRef(0);
   const lastSnapshotRef = useRef(0);
+  const calibrationStartRef = useRef(0);
+  const lastDetectionRef = useRef(0);
 
-  /** Snapshot every 500 ms during capture */
-  const SNAPSHOT_INTERVAL = 500;
+  /** Snapshot every 400 ms during capture (higher frequency for better peaks) */
+  const SNAPSHOT_INTERVAL = 400;
 
   // ── Sync React state from the flow machine ─────────────
   const sync = useCallback(() => {
@@ -71,19 +78,34 @@ export function useAssessment({
     flowRef.current = new AssessmentFlow();
     flowRef.current.start();
     historyRef.current = [];
+    lastSnapshotRef.current = 0;
+    calibrationStartRef.current = performance.now();
+    lastDetectionRef.current = performance.now();
     setResult(null);
     setCalibration(null);
+    setDetectionLost(false);
     sync();
   }, [sync]);
 
   const reset = useCallback(() => {
     flowRef.current = new AssessmentFlow();
     historyRef.current = [];
+    lastSnapshotRef.current = 0;
     setResult(null);
     setCalibration(null);
     setCurrentLandmarks(null);
+    setDetectionLost(false);
     sync();
   }, [sync]);
+
+  // ── Voice instruction when step changes ────────────────
+
+  useEffect(() => {
+    if (state.phase === 'calibrating' && state.currentStep) {
+      speakInstruction(state.currentStep.instruction);
+      calibrationStartRef.current = performance.now();
+    }
+  }, [state.phase, state.currentStepIndex, state.currentStep]);
 
   // ── Auto-advance from step-complete after a short pause ─
 
@@ -92,7 +114,7 @@ export function useAssessment({
     const id = setTimeout(() => {
       flowRef.current.nextStep();
       sync();
-    }, 1_200);
+    }, 1_500); // slightly longer so users can register completion
     return () => clearTimeout(id);
   }, [state.phase, state.completedSteps, sync]);
 
@@ -120,7 +142,6 @@ export function useAssessment({
       if (canvas) {
         const ctx = canvas.getContext('2d');
         if (ctx) {
-          // Resize canvas only when needed
           if (
             canvas.width !== video.videoWidth ||
             canvas.height !== video.videoHeight
@@ -144,10 +165,15 @@ export function useAssessment({
       // ─ Landmark history (always maintain when we have data) ──
       if (detection) {
         setCurrentLandmarks(detection.normalizedLandmarks);
+        lastDetectionRef.current = now;
+        setDetectionLost(false);
         historyRef.current.push(detection.normalizedLandmarks);
         if (historyRef.current.length > 30) {
           historyRef.current.shift();
         }
+      } else if (now - lastDetectionRef.current > 3_000) {
+        // No detection for 3 seconds — warn the user
+        setDetectionLost(true);
       }
 
       // ─ Phase-specific logic ───────────────────────────
@@ -172,7 +198,17 @@ export function useAssessment({
           }
         } else {
           flow.onCalibrationLost();
-          setCalibration(null);
+          // Show timeout warning after CALIBRATION_TIMEOUT
+          if (now - calibrationStartRef.current > CALIBRATION_TIMEOUT) {
+            setCalibration({
+              isReady: false,
+              fullBodyVisible: false,
+              distance: 'ok',
+              centering: 'ok',
+              stability: false,
+              prompts: ['Cannot detect your body. Try improving lighting or stepping further back.'],
+            });
+          }
         }
         sync();
       } else if (phase === 'countdown') {
@@ -211,6 +247,7 @@ export function useAssessment({
     calibration,
     currentLandmarks,
     result,
+    detectionLost,
     start,
     reset,
   } as const;
