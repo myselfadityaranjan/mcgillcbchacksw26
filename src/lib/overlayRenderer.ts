@@ -19,7 +19,7 @@ export const COLOURS = {
   yellow:     '#fbbf24',
   red:        '#ff4444',
   dim:        'rgba(255,255,255,0.18)',
-  bone:       'rgba(0,255,136,0.55)',
+  bone:       'rgba(0,255,136,0.80)',
   boneDim:    'rgba(0,255,136,0.22)',
   highlight:  '#ffffff',
   arrow:      '#fbbf24',
@@ -133,12 +133,12 @@ function drawSkeleton(
   for (const [i, j] of SKELETON_CONNECTIONS) {
     const a = lms[i]!, b = lms[j]!;
     const minVis = Math.min(a.visibility, b.visibility);
-    if (minVis < 0.15) continue;
+    if (minVis < 0.10) continue;
 
     const isHighlighted = highlightIndices.has(i) || highlightIndices.has(j);
     ctx.globalAlpha = minVis >= 0.5 ? (isHighlighted ? 0.95 : 0.55) : 0.2;
     ctx.strokeStyle = isHighlighted ? stateColour : COLOURS.bone;
-    ctx.lineWidth = isHighlighted ? 4 : 2;
+    ctx.lineWidth = isHighlighted ? 4 : 3;
 
     if (isHighlighted) {
       ctx.shadowColor = stateColour;
@@ -160,7 +160,7 @@ function drawSkeleton(
   // Joints
   for (let idx = 0; idx < lms.length; idx++) {
     const l = lms[idx]!;
-    if (l.visibility < 0.15) continue;
+    if (l.visibility < 0.10) continue;
     const isHighlighted = highlightIndices.has(idx);
     const [x, y] = px(l, w, h);
 
@@ -197,9 +197,17 @@ function drawSkeleton(
       ctx.fill();
       ctx.restore();
     } else {
+      // Subtle white halo so joints pop against any background
+      ctx.save();
+      ctx.fillStyle = 'rgba(255,255,255,0.20)';
+      ctx.beginPath();
+      ctx.arc(x, y, 10, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+      // Larger inner dot
       ctx.fillStyle = COLOURS.bone;
       ctx.beginPath();
-      ctx.arc(x, y, 4, 0, Math.PI * 2);
+      ctx.arc(x, y, 7, 0, Math.PI * 2);
       ctx.fill();
     }
   }
