@@ -114,7 +114,7 @@ export default function SessionComplete() {
           </motion.div>
 
           {/* What improved */}
-          <motion.div variants={fadeUp} className="bg-bg-surface border border-border rounded-xl p-4 text-left space-y-2">
+          <motion.div variants={fadeUp} className="bg-white border border-border rounded-xl p-4 text-left space-y-2 shadow-card">
             <h3 className="text-text-1 font-semibold text-sm flex items-center gap-2">
               <TrendingUp size={14} className="text-success" />
               What this session trained
@@ -135,7 +135,7 @@ export default function SessionComplete() {
 
           {/* Next drill */}
           {nextDrill && (
-            <motion.div variants={fadeUp} className="bg-brand/8 border border-brand/20 rounded-xl p-4">
+            <motion.div variants={fadeUp} className="bg-brand/10 border border-brand/20 rounded-xl p-4 shadow-sm">
               <p className="text-brand text-xs font-semibold mb-2">Suggested next drill</p>
               <div className="flex items-center justify-between">
                 <span className="text-text-1 font-semibold text-sm">{nextDrill.drill.name}</span>

@@ -49,7 +49,7 @@ export default function Results() {
   return (
     <PageTransition className="min-h-screen bg-bg pb-16">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-bg/90 backdrop-blur-sm border-b border-border px-4 py-3 flex items-center justify-between">
+      <div className="sticky top-0 z-10 bg-white/90 backdrop-blur-sm border-b border-border px-4 py-3 flex items-center justify-between">
         <Button
           variant="ghost"
           size="sm"
@@ -69,7 +69,7 @@ export default function Results() {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.4 }}
-          className="bg-bg-surface border border-border rounded-xl p-6 flex items-center gap-6"
+          className="bg-white border border-border rounded-2xl p-6 flex items-center gap-6 shadow-card"
         >
           <ProgressRing value={overallScore} size={88} strokeWidth={7} variant={variant}>
             <div className="flex flex-col items-center">

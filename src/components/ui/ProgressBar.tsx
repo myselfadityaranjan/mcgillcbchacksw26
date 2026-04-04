@@ -19,10 +19,10 @@ const trackClasses = {
 }
 
 const fillClasses = {
-  brand: 'bg-brand',
-  success: 'bg-success',
-  warning: 'bg-warning',
-  danger: 'bg-danger',
+  brand:    'bg-brand',
+  success:  'bg-success',
+  warning:  'bg-warning',
+  danger:   'bg-danger',
   gradient: 'bg-gradient-to-r from-danger via-warning to-success',
 }
 
@@ -46,7 +46,8 @@ export function ProgressBar({
           {showLabel && <span className="text-xs font-mono text-text-2">{Math.round(pct)}%</span>}
         </div>
       )}
-      <div className={cn('w-full bg-bg-elevated rounded-full overflow-hidden', trackClasses[size])}>
+      {/* Track — warm beige so it's visible on white bg */}
+      <div className={cn('w-full bg-stone-200 rounded-full overflow-hidden', trackClasses[size])}>
         <motion.div
           className={cn('h-full rounded-full', fillClasses[variant])}
           initial={animated ? { width: 0 } : false}
@@ -58,7 +59,7 @@ export function ProgressBar({
   )
 }
 
-/** Circular progress ring */
+/** Circular progress ring — updated for light background */
 export function ProgressRing({
   value,
   max = 100,
@@ -81,23 +82,24 @@ export function ProgressRing({
   const circumference = 2 * Math.PI * radius
   const offset = circumference - (pct / 100) * circumference
 
+  // New warm palette colours
   const strokeColors = {
-    brand: '#4F8EF7',
-    success: '#10E07C',
-    warning: '#FFB72B',
-    danger: '#FF4757',
+    brand:   '#6B9E77',   // sage green
+    success: '#5BA37A',   // forest green
+    warning: '#D97B35',   // warm amber
+    danger:  '#C05A52',   // warm red
   }
 
   return (
     <div className={cn('relative inline-flex items-center justify-center', className)}>
       <svg width={size} height={size} className="-rotate-90">
-        {/* Track */}
+        {/* Track — visible warm gray on white bg */}
         <circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="rgba(255,255,255,0.06)"
+          stroke="rgba(161,143,114,0.20)"
           strokeWidth={strokeWidth}
         />
         {/* Fill */}

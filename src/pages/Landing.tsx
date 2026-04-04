@@ -116,7 +116,7 @@ export default function Landing() {
       </header>
 
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
-      <main className="flex-1 flex flex-col items-center justify-center px-6 pt-20 pb-12 max-w-4xl mx-auto w-full text-center">
+      <main className="flex-1 flex flex-col items-center justify-center px-6 pt-12 pb-12 max-w-4xl mx-auto w-full text-center">
         <motion.div
           variants={stagger}
           initial="initial"
@@ -240,7 +240,8 @@ export default function Landing() {
       </section>
 
       {/* ── Bottom CTA band ────────────────────────────────────────────────── */}
-      <section className="mx-6 mb-12 max-w-2xl lg:mx-auto w-auto rounded-2xl bg-gradient-to-br from-brand/12 to-brand/5 border border-brand/15 p-8 text-center">
+      <section className="px-6 mb-12 w-full">
+      <div className="max-w-2xl mx-auto rounded-2xl bg-gradient-to-br from-brand/12 to-brand/5 border border-brand/15 p-8 text-center">
         <p
           className="text-2xl font-serif text-text-1 mb-3"
           style={{ fontFamily: "'DM Serif Display', serif" }}
@@ -251,6 +252,7 @@ export default function Landing() {
         <Button size="lg" onClick={handleStart} rightIcon={<ArrowRight size={18} />}>
           Begin Free Scan
         </Button>
+      </div>
       </section>
 
       {/* ── Disclaimer ────────────────────────────────────────────────────── */}

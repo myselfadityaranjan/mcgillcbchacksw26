@@ -48,7 +48,7 @@ export default function DrillDetail() {
   return (
     <PageTransition className="min-h-screen bg-bg pb-16">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-bg/90 backdrop-blur-sm border-b border-border px-4 py-3 flex items-center gap-3">
+      <div className="sticky top-0 z-10 bg-white/90 backdrop-blur-sm border-b border-border px-4 py-3 flex items-center gap-3">
         <Button variant="ghost" size="sm" onClick={() => navigate(-1)}>
           <ArrowLeft size={16} />
         </Button>

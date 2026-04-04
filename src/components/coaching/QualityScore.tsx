@@ -76,9 +76,9 @@ function Sparkline({
     .join(' ')
 
   const colorMap = {
-    success: '#10E07C',
-    warning: '#FFB72B',
-    danger: '#FF4757',
+    success: '#5BA37A',
+    warning: '#D97B35',
+    danger:  '#C05A52',
   }
 
   return (

@@ -134,7 +134,7 @@ export default function Analyzing() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.2 }}
-              className="text-text-2 text-sm h-5"
+              className="text-text-2 text-sm min-h-5"
             >
               {analysisCopy[stepIndex]}
             </motion.p>

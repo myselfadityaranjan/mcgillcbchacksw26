@@ -33,10 +33,10 @@ export function IssueCard({ issue, rank, defaultExpanded = false }: IssueCardPro
   return (
     <motion.div
       className={cn(
-        'rounded-lg border transition-colors duration-200',
+        'rounded-xl border transition-all duration-200',
         issue.severity === 'significant'
-          ? 'bg-danger/5 border-danger/20'
-          : 'bg-bg-surface border-border hover:border-border-strong'
+          ? 'bg-danger/5 border-danger/20 shadow-sm'
+          : 'bg-bg-surface border-border shadow-card hover:shadow-surface hover:-translate-y-0.5'
       )}
       layout
     >
@@ -48,7 +48,7 @@ export function IssueCard({ issue, rank, defaultExpanded = false }: IssueCardPro
       >
         {/* Rank */}
         {rank !== undefined && (
-          <span className="shrink-0 w-6 h-6 rounded-full bg-bg-elevated border border-border flex items-center justify-center text-xs text-text-2 font-mono mt-0.5">
+          <span className="shrink-0 w-6 h-6 rounded-full bg-stone-100 border border-border flex items-center justify-center text-xs text-text-2 font-mono mt-0.5">
             {rank}
           </span>
         )}
@@ -119,7 +119,7 @@ export function IssueCard({ issue, rank, defaultExpanded = false }: IssueCardPro
               </div>
 
               {/* Key metric */}
-              <div className="bg-bg-elevated rounded-md p-3 flex justify-between items-center">
+              <div className="bg-stone-100 rounded-lg p-3 flex justify-between items-center">
                 <span className="text-xs text-text-3 capitalize">
                   {issue.metrics.primaryDeviationLabel}
                 </span>

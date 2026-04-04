@@ -33,8 +33,8 @@ export function DrillCard({ recommendation, onClick, className }: DrillCardProps
       className={cn(
         'w-full text-left',
         'bg-bg-surface hover:bg-bg-elevated',
-        'border border-border hover:border-border-strong',
-        'rounded-lg p-4 transition-colors duration-200',
+        'border border-border',
+        'rounded-xl p-4 shadow-card hover:shadow-surface transition-all duration-200',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand',
         className
       )}
