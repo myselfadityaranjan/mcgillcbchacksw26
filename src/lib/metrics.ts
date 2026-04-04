@@ -40,6 +40,8 @@ export function computeMetrics(result: AssessmentResult): PostureMetrics {
     rightKneeValgus: 0,
     squatPoseConfidence: 0,
     armSymmetry: 0,
+    neckAngleDeg: 0,
+    thoracicAngleDeg: 0,
   };
 
   const byStep = new Map(result.captures.map((c) => [c.stepId, c]));
@@ -68,32 +70,79 @@ export function computeMetrics(result: AssessmentResult): PostureMetrics {
 
   // ── Side-stance ─────────────────────────────────────────────
   // Instruction: right side faces camera, user looks camera-left.
-  // In normalised coords the user's "front" is at lower x values.
-  // Forward head posture: ear is at lower x than shoulder.
-  // APT proxy: hip is at lower x than knee (hip anterior to knee).
+  // However we also try the left side and pick whichever has more
+  // visible landmarks, providing a robust bilateral fallback.
+  //
+  // Right side to camera: body "front" is at lower x values.
+  //   headForwardOffset = rShoulder.x − rEar.x  (positive = ear forward)
+  //   torsoForwardLean  = rHip.x − rShoulder.x  (positive = shoulder forward)
+  //   hipForwardPosition = rKnee.x − rHip.x     (positive = hip forward)
+  //
+  // Left side to camera: body "front" is at higher x values (mirrored).
+  //   headForwardOffset = lEar.x − lShoulder.x
+  //   torsoForwardLean  = lShoulder.x − lHip.x
+  //   hipForwardPosition = lHip.x − lKnee.x
   {
     const frame = byStep.get('side-stance')?.representativeFrame;
     if (frame) {
       const lms = frame.normalizedLandmarks;
-      const rEar = lm(lms, LM.RIGHT_EAR);
+
+      // Right-side candidates
+      const rEar      = lm(lms, LM.RIGHT_EAR);
       const rShoulder = lm(lms, LM.RIGHT_SHOULDER);
-      const rHip = lm(lms, LM.RIGHT_HIP);
-      const rKnee = lm(lms, LM.RIGHT_KNEE);
+      const rHip      = lm(lms, LM.RIGHT_HIP);
+      const rKnee     = lm(lms, LM.RIGHT_KNEE);
+      const rightVisible = [rEar, rShoulder, rHip, rKnee].filter(Boolean).length;
 
-      const visible = [rEar, rShoulder, rHip, rKnee].filter(Boolean).length;
-      m.sidePoseConfidence = visible / 4;
+      // Left-side candidates (fallback when user faces the other way)
+      const lEar      = lm(lms, LM.LEFT_EAR);
+      const lShoulder = lm(lms, LM.LEFT_SHOULDER);
+      const lHip      = lm(lms, LM.LEFT_HIP);
+      const lKnee     = lm(lms, LM.LEFT_KNEE);
+      const leftVisible = [lEar, lShoulder, lHip, lKnee].filter(Boolean).length;
 
-      if (rEar && rShoulder) {
-        // Positive: ear is more forward (lower x) than shoulder → FHP
-        m.headForwardOffset = Math.max(0, rShoulder.x - rEar.x);
+      // Choose the side with more visible landmarks
+      const useLeft = leftVisible > rightVisible;
+      const ear      = useLeft ? lEar      : rEar;
+      const shoulder = useLeft ? lShoulder : rShoulder;
+      const hip      = useLeft ? lHip      : rHip;
+      const knee     = useLeft ? lKnee     : rKnee;
+
+      m.sidePoseConfidence = Math.max(leftVisible, rightVisible) / 4;
+
+      if (ear && shoulder) {
+        // Signed forward offset (positive = ear ahead of shoulder)
+        m.headForwardOffset = useLeft
+          ? Math.max(0, ear.x - shoulder.x)
+          : Math.max(0, shoulder.x - ear.x);
+
+        // Neck angle from vertical (degrees): 0° = ideal, higher = more forward tilt
+        const neckDx = Math.abs(ear.x - shoulder.x);
+        const neckDy = Math.abs(shoulder.y - ear.y); // ear should sit above shoulder
+        m.neckAngleDeg = neckDy > 0.001
+          ? Math.atan2(neckDx, neckDy) * (180 / Math.PI)
+          : 0;
       }
-      if (rShoulder && rHip) {
-        // Positive: shoulder is more forward (lower x) than hip → forward lean
-        m.torsoForwardLean = Math.max(0, rHip.x - rShoulder.x);
+
+      if (shoulder && hip) {
+        // Shoulder forward of hip in sagittal plane
+        m.torsoForwardLean = useLeft
+          ? Math.max(0, shoulder.x - hip.x)
+          : Math.max(0, hip.x - shoulder.x);
+
+        // Thoracic angle from vertical (degrees): how much the trunk leans forward
+        const tDx = Math.abs(shoulder.x - hip.x);
+        const tDy = Math.abs(hip.y - shoulder.y); // hip should be below shoulder
+        m.thoracicAngleDeg = tDy > 0.001
+          ? Math.atan2(tDx, tDy) * (180 / Math.PI)
+          : 0;
       }
-      if (rHip && rKnee) {
-        // Positive: hip is more forward (lower x) than knee → APT tendency
-        m.hipForwardPosition = Math.max(0, rKnee.x - rHip.x);
+
+      if (hip && knee) {
+        // Hip forward of knee line (APT proxy)
+        m.hipForwardPosition = useLeft
+          ? Math.max(0, hip.x - knee.x)
+          : Math.max(0, knee.x - hip.x);
       }
     }
   }

@@ -22,10 +22,10 @@ const MAPPINGS: Record<IssueId, IssueMapping> = {
       `Your ${i.severity} rounded shoulder pattern is best addressed by opening the chest and retraining scapular retraction.`,
   },
   'forward-head-posture': {
-    primary: ['wall-angel'],
+    primary: ['chin-tuck-exercise', 'wall-angel'],
     secondary: ['doorway-pec-stretch'],
     reason: (i) =>
-      `Wall angels will restore the cervical neutral position and reduce the ${i.severity} forward head posture detected in your side view.`,
+      `Chin tucks directly retrain the deep cervical flexors to pull the head back, and wall angels reinforce the neutral cervical position — together they address the ${i.severity} forward head posture in your side view.`,
   },
   'anterior-pelvic-tilt': {
     primary: ['hip-flexor-stretch'],
@@ -45,7 +45,36 @@ const MAPPINGS: Record<IssueId, IssueMapping> = {
     reason: (i) =>
       `Your ${i.severity} left–right asymmetry responds well to unilateral loading drills that expose and correct side-to-side imbalances.`,
   },
+  'thoracic-kyphosis': {
+    primary: ['cat-cow-stretch', 'wall-angel'],
+    secondary: ['doorway-pec-stretch'],
+    reason: (i) =>
+      `Your ${i.severity} thoracic kyphosis is best addressed with spinal mobilisation through cat–cow and thoracic extension work via wall angels to reverse the forward-rounding pattern.`,
+  },
+  'neck-flexion': {
+    primary: ['chin-tuck-exercise'],
+    secondary: ['wall-angel'],
+    reason: (i) =>
+      `A ${i.severity} neck flexion posture is directly corrected by chin tucks, which activate the deep cervical flexors to restore neutral cervical alignment.`,
+  },
 };
+
+// ── Wellness recommendations (no issues detected) ─────────────
+
+const WELLNESS_DRILL_IDS: DrillId[] = ['wall-angel', 'hip-flexor-stretch'];
+
+/**
+ * Return general wellness drill recommendations for users with no
+ * detected issues — good posture should still be maintained.
+ */
+export function buildWellnessRecommendations(): DrillRecommendation[] {
+  return WELLNESS_DRILL_IDS.map((id, idx) => ({
+    drill: DRILLS[id] as Drill,
+    reason: 'Recommended as a general mobility maintenance routine to support long-term posture health and joint freedom.',
+    targetIssueIds: [],
+    priority: idx + 1,
+  }));
+}
 
 // ── Build recommendations ─────────────────────────────────────
 

@@ -139,6 +139,53 @@ export const DRILLS: Record<string, Drill> = {
       LM.LEFT_SHOULDER, LM.RIGHT_SHOULDER,
     ],
   },
+  'chin-tuck-exercise': {
+    id: 'chin-tuck-exercise',
+    name: 'Chin Tuck',
+    targetIssues: ['forward-head-posture', 'neck-flexion'],
+    bodyArea: 'Neck & Cervical Spine',
+    description: 'Retrains the deep cervical flexors to retract the head into neutral alignment, directly counteracting forward head and neck flexion posture.',
+    setupInstructions: 'Sit or stand tall with your back straight. Face the camera. Place one finger lightly on your chin as a guide. Without nodding, gently draw your chin straight back — like making a double chin. Hold 3 seconds, release, repeat.',
+    coachingCues: [
+      'Draw chin straight back — not down, not tilted',
+      'Keep your gaze level — eyes on the horizon throughout',
+      'Feel the gentle stretch at the base of your skull',
+      'Hold the retracted position for 3 full seconds before releasing',
+    ],
+    durationSeconds: 30,
+    reps: 10,
+    unsafeConditions: [
+      'Sharp or shooting pain into the arm or hand',
+      'Dizziness or lightheadedness when retracting',
+    ],
+    keyLandmarks: [LM.NOSE, LM.LEFT_EAR, LM.RIGHT_EAR, LM.LEFT_SHOULDER, LM.RIGHT_SHOULDER],
+  },
+
+  'cat-cow-stretch': {
+    id: 'cat-cow-stretch',
+    name: 'Cat–Cow Thoracic Mobilisation',
+    targetIssues: ['thoracic-kyphosis', 'rounded-shoulders'],
+    bodyArea: 'Thoracic Spine & Upper Back',
+    description: 'Cycles the thoracic spine through full flexion and extension, reversing chronic kyphotic stiffness and restoring normal upper back mobility.',
+    setupInstructions: 'Start on all fours: hands directly below shoulders, knees below hips. Keep arms straight throughout. Face sideways toward the camera so your spine is visible. Alternate between arching your back upward (cat) and dropping it downward (cow).',
+    coachingCues: [
+      'Cat: round your entire back toward the ceiling, tuck your chin and tailbone',
+      'Cow: drop your belly down, lift your head and tailbone toward the ceiling',
+      'Move slowly through each position — 3–4 seconds per phase',
+      'Breathe in during cow (extension), breathe out during cat (flexion)',
+    ],
+    durationSeconds: 45,
+    reps: 10,
+    unsafeConditions: [
+      'Sharp spinal pain during the cow (extension) phase',
+      'Wrist pain — use fists or yoga blocks to reduce wrist load',
+    ],
+    keyLandmarks: [
+      LM.LEFT_SHOULDER, LM.RIGHT_SHOULDER,
+      LM.LEFT_HIP,      LM.RIGHT_HIP,
+      LM.NOSE,          LM.LEFT_EAR, LM.RIGHT_EAR,
+    ],
+  },
 };
 
 export const DRILL_LIST = Object.values(DRILLS);

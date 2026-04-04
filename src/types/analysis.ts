@@ -9,7 +9,9 @@ export type IssueId =
   | 'forward-head-posture'
   | 'anterior-pelvic-tilt'
   | 'knee-valgus'
-  | 'lateral-asymmetry';
+  | 'lateral-asymmetry'
+  | 'thoracic-kyphosis'
+  | 'neck-flexion';
 
 export type Severity = 'mild' | 'moderate' | 'significant';
 
@@ -69,6 +71,12 @@ export interface PostureMetrics {
   // ── From arm-raise (peak frame) ────────────────
   /** |leftWrist.y − rightWrist.y| at peak overhead position */
   armSymmetry: number;
+
+  // ── Derived angles (side-stance) ───────────────
+  /** Neck angle from vertical in degrees (0° = ideal, higher = more forward tilt) */
+  neckAngleDeg: number;
+  /** Thoracic spine angle from vertical in degrees (0° = ideal, higher = more rounded) */
+  thoracicAngleDeg: number;
 }
 
 // ── Final analysis result ────────────────────────────────────

@@ -16,11 +16,11 @@ type RegionId =
   | 'left-knee' | 'right-knee';
 
 const REGION_ISSUES: Record<RegionId, IssueId[]> = {
-  'head':           ['forward-head-posture'],
-  'neck':           ['forward-head-posture'],
-  'left-shoulder':  ['rounded-shoulders', 'lateral-asymmetry'],
-  'right-shoulder': ['rounded-shoulders', 'lateral-asymmetry'],
-  'upper-back':     ['rounded-shoulders'],
+  'head':           ['forward-head-posture', 'neck-flexion'],
+  'neck':           ['forward-head-posture', 'neck-flexion'],
+  'left-shoulder':  ['rounded-shoulders', 'lateral-asymmetry', 'thoracic-kyphosis'],
+  'right-shoulder': ['rounded-shoulders', 'lateral-asymmetry', 'thoracic-kyphosis'],
+  'upper-back':     ['rounded-shoulders', 'thoracic-kyphosis'],
   'core':           ['anterior-pelvic-tilt'],
   'pelvis':         ['anterior-pelvic-tilt', 'lateral-asymmetry'],
   'left-knee':      ['knee-valgus'],
@@ -101,6 +101,8 @@ const ISSUE_DISPLAY: Record<IssueId, string> = {
   'anterior-pelvic-tilt':  'Pelvic Tilt',
   'knee-valgus':            'Knee Valgus',
   'lateral-asymmetry':      'Lateral Asymmetry',
+  'thoracic-kyphosis':      'Thoracic Kyphosis',
+  'neck-flexion':           'Neck Flexion',
 };
 
 // ── Main component ────────────────────────────────────────────

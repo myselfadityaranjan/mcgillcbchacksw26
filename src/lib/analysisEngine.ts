@@ -15,6 +15,8 @@ import {
   detectAnteriorPelvicTilt,
   detectKneeValgus,
   detectLateralAsymmetry,
+  detectThoracicKyphosis,
+  detectNeckFlexion,
 } from './issueDetectors';
 
 /**
@@ -47,7 +49,9 @@ export function runAnalysis(result: AssessmentResult): AnalysisResult {
   const dataQuality = assessDataQuality(result);
 
   const candidates = [
+    detectNeckFlexion(metrics, result),
     detectForwardHeadPosture(metrics, result),
+    detectThoracicKyphosis(metrics, result),
     detectRoundedShoulders(metrics, result),
     detectAnteriorPelvicTilt(metrics, result),
     detectKneeValgus(metrics, result),

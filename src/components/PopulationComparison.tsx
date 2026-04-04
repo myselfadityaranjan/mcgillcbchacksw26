@@ -13,6 +13,8 @@ const POPULATION_PREVALENCE: Record<IssueId, { prevalence: number; label: string
   'anterior-pelvic-tilt': { prevalence: 0.41, label: 'Anterior Pelvic Tilt' },
   'knee-valgus':          { prevalence: 0.28, label: 'Knee Valgus' },
   'lateral-asymmetry':    { prevalence: 0.35, label: 'Lateral Asymmetry' },
+  'thoracic-kyphosis':    { prevalence: 0.38, label: 'Thoracic Kyphosis' },
+  'neck-flexion':         { prevalence: 0.52, label: 'Excessive Neck Flexion' },
 };
 
 // Synthetic severity distribution within each issue
@@ -22,6 +24,8 @@ const SEVERITY_DIST: Record<IssueId, { mild: number; moderate: number; significa
   'anterior-pelvic-tilt': { mild: 0.48, moderate: 0.34, significant: 0.18 },
   'knee-valgus':          { mild: 0.55, moderate: 0.30, significant: 0.15 },
   'lateral-asymmetry':    { mild: 0.50, moderate: 0.32, significant: 0.18 },
+  'thoracic-kyphosis':    { mild: 0.42, moderate: 0.36, significant: 0.22 },
+  'neck-flexion':         { mild: 0.44, moderate: 0.34, significant: 0.22 },
 };
 
 function computePercentile(issue: DetectedIssue): number {

@@ -16,18 +16,20 @@ interface DailyExercise {
 }
 
 const EXERCISE_LIBRARY: DailyExercise[] = [
-  { name: 'Cat-Cow Stretch', duration: '60s', sets: '10 reps', icon: 'stretch', targetIssues: ['rounded-shoulders', 'anterior-pelvic-tilt'], instruction: 'On all fours, alternate between arching and rounding your spine with each breath.' },
-  { name: 'Chin Tucks', duration: '30s', sets: '10 reps', icon: 'strength', targetIssues: ['forward-head-posture'], instruction: 'Pull your chin straight back, creating a double chin. Hold 3 seconds.' },
-  { name: 'Doorway Pec Stretch', duration: '30s each side', icon: 'stretch', targetIssues: ['rounded-shoulders'], instruction: 'Place forearm on door frame at shoulder height. Step through until you feel chest stretch.' },
-  { name: 'Wall Angel', duration: '45s', sets: '10 reps', icon: 'strength', targetIssues: ['rounded-shoulders', 'forward-head-posture'], instruction: 'Back against wall. Slide arms from W to Y while keeping contact.' },
+  { name: 'Cat-Cow Stretch', duration: '60s', sets: '10 reps', icon: 'stretch', targetIssues: ['rounded-shoulders', 'anterior-pelvic-tilt', 'thoracic-kyphosis'], instruction: 'On all fours, alternate between arching and rounding your spine with each breath.' },
+  { name: 'Chin Tucks', duration: '30s', sets: '10 reps', icon: 'strength', targetIssues: ['forward-head-posture', 'neck-flexion'], instruction: 'Pull your chin straight back, creating a double chin. Hold 3 seconds.' },
+  { name: 'Doorway Pec Stretch', duration: '30s each side', icon: 'stretch', targetIssues: ['rounded-shoulders', 'thoracic-kyphosis'], instruction: 'Place forearm on door frame at shoulder height. Step through until you feel chest stretch.' },
+  { name: 'Wall Angel', duration: '45s', sets: '10 reps', icon: 'strength', targetIssues: ['rounded-shoulders', 'forward-head-posture', 'thoracic-kyphosis'], instruction: 'Back against wall. Slide arms from W to Y while keeping contact.' },
   { name: 'Hip Flexor Stretch', duration: '30s each side', icon: 'stretch', targetIssues: ['anterior-pelvic-tilt'], instruction: 'Half-kneeling lunge. Tuck pelvis, squeeze back glute, lean forward gently.' },
   { name: 'Glute Bridge', duration: '45s', sets: '12 reps', icon: 'strength', targetIssues: ['anterior-pelvic-tilt', 'knee-valgus'], instruction: 'Lie on back, feet flat. Drive hips up squeezing glutes. Hold 2s at top.' },
   { name: 'Clamshells', duration: '30s each side', sets: '15 reps', icon: 'strength', targetIssues: ['knee-valgus', 'lateral-asymmetry'], instruction: 'Side-lying, knees bent 45°. Open top knee keeping feet together. Slow and controlled.' },
   { name: 'Bird Dog', duration: '60s', sets: '8 each side', icon: 'strength', targetIssues: ['lateral-asymmetry', 'anterior-pelvic-tilt'], instruction: 'On all fours. Extend opposite arm and leg. Hold 3s. Keep hips level.' },
-  { name: 'Deep Breathing', duration: '2 min', icon: 'breathing', targetIssues: ['rounded-shoulders', 'forward-head-posture', 'anterior-pelvic-tilt', 'knee-valgus', 'lateral-asymmetry'], instruction: 'Diaphragmatic breathing. Inhale 4s, hold 4s, exhale 6s. Relaxes postural muscles.' },
+  { name: 'Deep Breathing', duration: '2 min', icon: 'breathing', targetIssues: ['rounded-shoulders', 'forward-head-posture', 'anterior-pelvic-tilt', 'knee-valgus', 'lateral-asymmetry', 'thoracic-kyphosis', 'neck-flexion'], instruction: 'Diaphragmatic breathing. Inhale 4s, hold 4s, exhale 6s. Relaxes postural muscles.' },
   { name: 'Single Leg Balance', duration: '30s each side', icon: 'strength', targetIssues: ['knee-valgus', 'lateral-asymmetry'], instruction: 'Stand on one leg, slight knee bend. Keep hips level. Eyes forward.' },
-  { name: 'Thoracic Rotation', duration: '30s each side', sets: '8 reps', icon: 'stretch', targetIssues: ['rounded-shoulders', 'lateral-asymmetry'], instruction: 'Side-lying, knees stacked. Rotate top arm open, following with your gaze.' },
+  { name: 'Thoracic Rotation', duration: '30s each side', sets: '8 reps', icon: 'stretch', targetIssues: ['rounded-shoulders', 'lateral-asymmetry', 'thoracic-kyphosis'], instruction: 'Side-lying, knees stacked. Rotate top arm open, following with your gaze.' },
   { name: 'Squat to Stand', duration: '60s', sets: '6 reps', icon: 'stretch', targetIssues: ['knee-valgus', 'anterior-pelvic-tilt'], instruction: 'Hinge down, grab toes. Squat deep, chest up. Stand and repeat.' },
+  { name: 'Neck Retraction Hold', duration: '20s', sets: '5 reps', icon: 'strength', targetIssues: ['neck-flexion', 'forward-head-posture'], instruction: 'Seated tall. Pull head straight back and tuck chin. Hold 5 seconds. Release slowly.' },
+  { name: 'Prone Y-T-W Raises', duration: '45s', sets: '8 reps', icon: 'strength', targetIssues: ['thoracic-kyphosis', 'rounded-shoulders'], instruction: 'Lie face-down, arms extended. Raise arms into Y, then T, then W shapes. Squeeze shoulder blades.' },
 ];
 
 const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -41,7 +43,7 @@ interface DayPlan {
   totalMinutes: number;
 }
 
-function buildWeeklyPlan(issues: DetectedIssue[], recs: DrillRecommendation[]): DayPlan[] {
+function buildWeeklyPlan(issues: DetectedIssue[], _recs: DrillRecommendation[]): DayPlan[] {
   const issueIds = issues.map((i) => i.id);
 
   // Score exercises by relevance to user's issues
