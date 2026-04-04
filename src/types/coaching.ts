@@ -1,28 +1,77 @@
-/**
- * Coaching types — the live feedback layer (Task 4 / Person 2).
- * Per-frame coaching state drives the UI overlays and cue cards.
- */
+// ──────────────────────────────────────────────────────────────
+// Coaching types — Task 4 live-coaching engine output
+// ──────────────────────────────────────────────────────────────
 
-import type { DrillId } from './drills'
-import type { PoseFrame } from './pose'
+/** Traffic-light form quality state */
+export type FormState = 'green' | 'yellow' | 'red';
 
-/** Traffic-light form quality */
-export type FormQuality = 'green' | 'yellow' | 'red'
+/** Alias for backward compatibility */
+export type FormQuality = FormState;
 
-/** Priority level of a coaching cue */
-export type CuePriority = 'unsafe' | 'major' | 'minor'
+/** Priority ordering for cue selection */
+export type CuePriority = 'unsafe' | 'major' | 'minor' | 'fine';
 
-/** A single live coaching cue surfaced to the user */
-export interface LiveCue {
-  id: string
-  text: string
-  priority: CuePriority
-  joints: string[]          // joint/region names for overlay highlights
-  arrowDirection?: 'up' | 'down' | 'left' | 'right' | 'outward' | 'inward'
-  arrowTargetJoint?: string
+export interface ArrowVector {
+  /** MediaPipe landmark index the arrow originates from */
+  fromLandmark: number;
+  /** Normalised canvas direction (−1 to 1, x=right, y=down) */
+  dx: number;
+  dy: number;
 }
 
-/** Per-frame coaching state produced by Person 2's live coach engine */
+export interface LiveCue {
+  /** Cue identifier — used for debouncing in speech hooks */
+  id?: string;
+  text: string;
+  priority: CuePriority;
+  /** Joint/region names for overlay highlights (legacy overlay system) */
+  joints?: string[];
+  /** Arrow direction for legacy overlay system */
+  arrowDirection?: 'up' | 'down' | 'left' | 'right' | 'outward' | 'inward';
+  arrowTargetJoint?: string;
+  /** Landmarks to highlight with the issue colour (new overlay renderer) */
+  affectedLandmarks?: number[];
+  /** Directional correction arrows (new overlay renderer) */
+  arrows?: ArrowVector[];
+}
+
+// ── New coaching frame (used by liveCoach.ts / useLiveCoaching) ──────────
+
+export interface CoachingFrame {
+  formState: FormState;
+  cue: LiveCue | null;
+  /** Instantaneous quality score 0–100 for this frame */
+  qualityScore: number;
+  /** Raw drill-specific metric values used for this frame */
+  metrics: Record<string, number>;
+}
+
+export interface CoachingSession {
+  drillId: string;
+  startTime: number;
+  /** Time spent in each state (ms) */
+  timeInGreen: number;
+  timeInYellow: number;
+  timeInRed: number;
+  /** Final 0–100 session score */
+  finalScore: number;
+  isComplete: boolean;
+  /** Best cue surfaced (most recent red → yellow → green progression cue) */
+  lastCue: LiveCue | null;
+  /** Seconds of continuous good form at session end (0 if ended in non-green) */
+  currentStreak: number;
+  /** Peak consecutive good-form streak this session, in seconds */
+  bestStreak: number;
+  /** Number of times the user recovered form from yellow/red back to green */
+  recoveries: number;
+}
+
+// ── Legacy coaching frame (used by old Coaching.tsx + store) ─────────────
+
+import type { PoseFrame } from './pose'
+import type { DrillId } from './drills'
+
+/** Per-frame coaching state produced by the live coach engine */
 export interface CoachingFrameState {
   timestamp: number
   drillId: DrillId
@@ -61,29 +110,22 @@ export interface CoachingSessionStats {
   averageScore: number
   totalReps: number
   longestGoodHoldMs: number
-  correctionsMade: number      // times form went red → yellow/green
+  correctionsMade: number
   unsafeEvents: number
 }
 
 /** Lifecycle state of the coaching mode */
 export type CoachingStatus =
   | 'idle'
-  | 'setup'           // waiting for user to get into start position
-  | 'active'          // actively coaching
-  | 'paused'          // user paused (e.g. unsafe state)
-  | 'complete'        // session done
+  | 'setup'
+  | 'active'
+  | 'paused'
+  | 'complete'
 
-/** Input contract that Person 2's live coach engine must satisfy */
+/** Input contract that a coaching engine must satisfy */
 export interface ICoachingEngine {
-  /** Initialize for a given drill */
   init(drillId: DrillId): Promise<void>
-
-  /** Process a single pose frame and return coaching state */
   processFrame(frame: PoseFrame): CoachingFrameState
-
-  /** Get aggregated stats for the current session */
   getStats(): CoachingSessionStats
-
-  /** Reset for a new session */
   reset(): void
 }

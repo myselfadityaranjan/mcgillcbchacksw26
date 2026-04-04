@@ -20,6 +20,10 @@ export default {
           elevated: '#F5F0E8',
           high: '#EDE6D4',
         },
+        // Shortcut aliases for new pages compatibility
+        surface: '#FFFFFF',
+        elevated: '#F5F0E8',
+        high: '#EDE6D4',
         // ── Borders (warm tan) ───────────────────────────────────────────
         border: {
           DEFAULT: 'rgba(161,143,114,0.18)',
@@ -124,7 +128,6 @@ export default {
           '0%':   { backgroundPosition: '-200% 0' },
           '100%': { backgroundPosition: '200% 0' },
         },
-        // Down Dog-inspired breathing animation
         breathe: {
           '0%, 100%': { transform: 'scale(1)',    opacity: '0.7' },
           '50%':      { transform: 'scale(1.08)', opacity: '1'   },

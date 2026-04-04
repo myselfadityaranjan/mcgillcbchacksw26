@@ -1,120 +1,62 @@
-import { useRef, useState, useCallback, useEffect } from 'react'
+import { useRef, useState, useCallback, useEffect } from 'react';
+import { CameraManager } from '../lib/camera';
 
-export type CameraFacing = 'user' | 'environment'
-export type CameraPermission = 'idle' | 'requesting' | 'granted' | 'denied' | 'unavailable'
+export function useCamera() {
+  const videoRef    = useRef<HTMLVideoElement>(null);
+  const managerRef  = useRef<CameraManager>(null);
 
-export interface CameraState {
-  permission: CameraPermission
-  stream: MediaStream | null
-  error: string | null
-  deviceId: string | null
-  devices: MediaDeviceInfo[]
-}
+  // Lazy-init: exactly one CameraManager per hook mount
+  if (managerRef.current === null) {
+    managerRef.current = new CameraManager();
+  }
 
-/**
- * Camera access hook — handles getUserMedia, permission states, and cleanup.
- * Person 1 consumes the returned videoRef to feed into MediaPipe.
- */
-export function useCamera(facing: CameraFacing = 'user') {
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const streamRef = useRef<MediaStream | null>(null)
+  const [isActive, setIsActive] = useState(false);
+  const [error, setError]       = useState<string | null>(null);
 
-  const [state, setState] = useState<CameraState>({
-    permission: 'idle',
-    stream: null,
-    error: null,
-    deviceId: null,
-    devices: [],
-  })
+  // ── Re-attach the stream whenever videoRef.current changes ─
+  // This handles page transitions where a new <video> element mounts
+  // while the MediaStream is already running.
+  useEffect(() => {
+    const video  = videoRef.current;
+    const stream = managerRef.current?.getStream();
+    if (!video || !stream) return;
+    if (video.srcObject !== stream) {
+      video.srcObject = stream;
+      video.play().catch(() => {/* autoplay policy; user interaction already happened */});
+    }
+  }); // Intentionally no deps — runs after every render to catch ref changes
 
-  const startCamera = useCallback(async (deviceId?: string) => {
-    setState((s) => ({ ...s, permission: 'requesting', error: null }))
-
+  const start = useCallback(async () => {
+    const video = videoRef.current;
+    if (!video) {
+      setError('Video element not mounted');
+      return;
+    }
     try {
-      const constraints: MediaStreamConstraints = {
-        video: {
-          facingMode: facing,
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
-          frameRate: { ideal: 30 },
-          ...(deviceId ? { deviceId: { exact: deviceId } } : {}),
-        },
-        audio: false,
-      }
-
-      const stream = await navigator.mediaDevices.getUserMedia(constraints)
-      streamRef.current = stream
-
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream
-        await videoRef.current.play()
-      }
-
-      // Enumerate available cameras
-      const devices = await navigator.mediaDevices.enumerateDevices()
-      const cameras = devices.filter((d) => d.kind === 'videoinput')
-      const track = stream.getVideoTracks()[0]
-
-      setState({
-        permission: 'granted',
-        stream,
-        error: null,
-        deviceId: track?.getSettings().deviceId ?? null,
-        devices: cameras,
-      })
+      setError(null);
+      await managerRef.current!.start(video);
+      setIsActive(true);
     } catch (err) {
-      const error = err as DOMException
-      let message = 'Camera access failed'
-      let permission: CameraPermission = 'denied'
-
-      if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
-        message = 'Camera permission was denied. Please allow camera access and try again.'
-        permission = 'denied'
-      } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
-        message = 'No camera found on this device.'
-        permission = 'unavailable'
-      } else if (error.name === 'NotReadableError') {
-        message = 'Camera is already in use by another application.'
-        permission = 'unavailable'
-      }
-
-      setState((s) => ({ ...s, permission, error: message }))
+      const msg =
+        err instanceof DOMException && err.name === 'NotAllowedError'
+          ? 'Camera permission was denied. Please allow camera access and try again.'
+          : err instanceof Error
+            ? err.message
+            : 'Failed to access camera';
+      setError(msg);
     }
-  }, [facing])
+  }, []);
 
-  const stopCamera = useCallback(() => {
-    streamRef.current?.getTracks().forEach((t) => t.stop())
-    streamRef.current = null
-    if (videoRef.current) {
-      videoRef.current.srcObject = null
-    }
-    setState((s) => ({
-      ...s,
-      stream: null,
-      permission: s.permission === 'granted' ? 'idle' : s.permission,
-    }))
-  }, [])
-
-  const switchCamera = useCallback(
-    async (deviceId: string) => {
-      stopCamera()
-      await startCamera(deviceId)
-    },
-    [stopCamera, startCamera]
-  )
+  const stop = useCallback(() => {
+    managerRef.current!.stop();
+    setIsActive(false);
+  }, []);
 
   // Cleanup on unmount
   useEffect(() => {
-    return () => {
-      streamRef.current?.getTracks().forEach((t) => t.stop())
-    }
-  }, [])
+    const mgr = managerRef.current!;
+    return () => mgr.stop();
+  }, []);
 
-  return {
-    videoRef,
-    state,
-    startCamera,
-    stopCamera,
-    switchCamera,
-  }
+  return { videoRef, isActive, error, start, stop } as const;
 }

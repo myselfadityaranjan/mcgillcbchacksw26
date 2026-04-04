@@ -1,0 +1,369 @@
+@import "tailwindcss";
+
+/* ─── Design tokens ──────────────────────────────────────────────────────── */
+:root {
+  --color-bg:          #FAFAF7;
+  --color-surface:     #FFFFFF;
+  --color-elevated:    #F5F0E8;
+  --color-high:        #EDE6D4;
+  --color-border:      rgba(161,143,114,0.18);
+  --color-border-strong: rgba(161,143,114,0.36);
+  --color-brand:       #6B9E77;
+  --color-brand-dark:  #4E7A5C;
+  --color-success:     #5BA37A;
+  --color-warning:     #D97B35;
+  --color-danger:      #C05A52;
+  --color-text-1:      #1C1810;
+  --color-text-2:      #6B635A;
+  --color-text-3:      #A8A29E;
+
+  /* Legacy compat tokens used by overlay renderer & canvas code */
+  --green:  #5BA37A;
+  --yellow: #D97B35;
+  --red:    #C05A52;
+  --blue:   #5B8CB0;
+}
+
+/* ─── Tailwind theme extension ────────────────────────────────────────────── */
+@theme {
+  --color-bg: #FAFAF7;
+  --color-surface: #FFFFFF;
+  --color-elevated: #F5F0E8;
+  --color-high: #EDE6D4;
+  --color-border: rgba(161,143,114,0.18);
+  --color-border-strong: rgba(161,143,114,0.36);
+  --color-brand: #6B9E77;
+  --color-brand-dark: #4E7A5C;
+  --color-success: #5BA37A;
+  --color-warning: #D97B35;
+  --color-danger: #C05A52;
+  --color-text-1: #1C1810;
+  --color-text-2: #6B635A;
+  --color-text-3: #A8A29E;
+  --font-sans: 'DM Sans', Inter, system-ui, -apple-system, sans-serif;
+  --font-serif: 'DM Serif Display', Georgia, serif;
+}
+
+/* ─── Base resets ─────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text-1);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+#root { min-height: 100dvh; }
+
+/* ─── Scrollbar ───────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(161,143,114,0.28); border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(161,143,114,0.50); }
+
+/* ─── Focus styles ────────────────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+/* ─── Selection ───────────────────────────────────────────────────────────── */
+::selection {
+  background-color: rgba(107,158,119,0.22);
+  color: var(--color-text-1);
+}
+
+/* ─── Animations ──────────────────────────────────────────────────────────── */
+@keyframes breathe {
+  0%, 100% { transform: scale(1);    opacity: 0.7; }
+  50%      { transform: scale(1.08); opacity: 1;   }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%      { transform: translateY(-12px); }
+}
+@keyframes blob {
+  0%, 100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+  25%      { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
+  50%      { border-radius: 50% 60% 30% 60% / 30% 60% 70% 40%; }
+  75%      { border-radius: 60% 40% 60% 30% / 70% 30% 60% 50%; }
+}
+@keyframes fadeIn   { 0% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes slideUp  { 0% { opacity: 0; transform: translateY(20px); } 100% { opacity: 1; transform: translateY(0); } }
+@keyframes spin     { to { transform: rotate(360deg); } }
+@keyframes pulse    { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+@keyframes shimmer  { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+
+.animate-breathe  { animation: breathe 4s ease-in-out infinite; }
+.animate-float    { animation: float 6s ease-in-out infinite; }
+.animate-blob     { animation: blob 8s ease-in-out infinite; }
+.animate-fade-in  { animation: fadeIn 0.4s ease forwards; }
+.animate-slide-up { animation: slideUp 0.45s cubic-bezier(0.16,1,0.3,1) forwards; }
+.animate-spin     { animation: spin 1s linear infinite; }
+
+.blob-shape { animation: blob 8s ease-in-out infinite; }
+
+/* ─── Card utilities ──────────────────────────────────────────────────────── */
+.card-lift {
+  transition: transform 0.22s cubic-bezier(0.16,1,0.3,1), box-shadow 0.22s cubic-bezier(0.16,1,0.3,1);
+}
+.card-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(100,80,50,0.12);
+}
+
+/* ─── Camera / canvas layers ──────────────────────────────────────────────── */
+.camera-feed {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+  border-radius: 18px;
+}
+.skeleton-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.camera-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4/3;
+  max-height: 70vh;
+  border-radius: 18px;
+  overflow: hidden;
+  background: var(--color-high);
+}
+
+/* ─── Overlay boxes (calibration prompts, countdowns, etc.) ───────────────── */
+.overlay-box {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  z-index: 10;
+}
+.overlay-box.prompts {
+  background: rgba(28,24,16,0.65);
+  backdrop-filter: blur(6px);
+}
+.overlay-box.prompts.ok { border: 2px solid var(--color-success); }
+.overlay-box.prompts.warn { border: 2px solid var(--color-warning); }
+.prompt-line {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: white;
+  text-align: center;
+  padding: 0 16px;
+}
+.prompt-line.ok { color: var(--color-success); }
+
+.overlay-box.countdown {
+  background: rgba(28,24,16,0.7);
+}
+.overlay-box.countdown span {
+  font-size: 5rem;
+  font-weight: 800;
+  color: white;
+  font-variant-numeric: tabular-nums;
+}
+
+.overlay-box.step-done {
+  background: rgba(91,163,122,0.2);
+  backdrop-filter: blur(4px);
+}
+.step-done-check {
+  font-size: 3rem;
+  color: var(--color-success);
+}
+.overlay-box.step-done p {
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
+}
+
+/* ─── Capture bar ─────────────────────────────────────────────────────────── */
+.capture-bar-wrap {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 32px;
+  background: rgba(28,24,16,0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+}
+.capture-bar {
+  height: 100%;
+  background: var(--color-brand);
+  transition: width 0.3s linear;
+}
+.capture-label {
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: white;
+}
+
+/* ─── Progress bar for coaching ───────────────────────────────────────────── */
+.coaching-progress-wrap {
+  height: 4px;
+  background: var(--color-elevated);
+  border-radius: 100px;
+  overflow: hidden;
+}
+.coaching-progress-bar {
+  height: 100%;
+  border-radius: 100px;
+  transition: width 0.5s linear;
+}
+.form-bar-green  { background: var(--color-success); }
+.form-bar-yellow { background: var(--color-warning); }
+.form-bar-red    { background: var(--color-danger); }
+
+/* ─── Form state indicators (coaching quality row) ────────────────────────── */
+.quality-indicator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.quality-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.form-green  .quality-dot { background: var(--color-success); box-shadow: 0 0 8px var(--color-success); }
+.form-yellow .quality-dot { background: var(--color-warning); box-shadow: 0 0 8px var(--color-warning); }
+.form-red    .quality-dot { background: var(--color-danger);  box-shadow: 0 0 8px var(--color-danger); }
+.form-lost   .quality-dot { background: var(--color-text-3);  animation: pulse 1.2s ease infinite alternate; }
+
+.quality-label { font-size: 0.88rem; font-weight: 600; }
+.form-green  .quality-label { color: var(--color-success); }
+.form-yellow .quality-label { color: var(--color-warning); }
+.form-red    .quality-label { color: var(--color-danger); }
+.form-lost   .quality-label { color: var(--color-text-3); }
+
+.quality-score {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--color-text-1);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── Body Strain Map ────────────────────────────────────────────────────── */
+.strain-map-wrap {
+  background: linear-gradient(135deg, #1C1810 0%, #2A2518 100%);
+  border: 1px solid rgba(107,158,119,0.15);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.strain-map-header {
+  padding: 14px 18px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.strain-map-header .section-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-brand);
+}
+.strain-map-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 16px 18px;
+  gap: 18px;
+}
+.strain-map-svg-wrap {
+  width: 140px;
+  flex-shrink: 0;
+}
+.strain-map-svg {
+  width: 100%;
+  height: auto;
+}
+.strain-map-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+.strain-legend-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.strain-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-top: 4px;
+  flex-shrink: 0;
+}
+.strain-legend-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.strain-legend-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+}
+.strain-legend-sev {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+.strain-legend-conf {
+  font-weight: 400;
+  color: rgba(255,255,255,0.45);
+}
+
+/* ─── Annotated Evidence ─────────────────────────────────────────────────── */
+.annotated-evidence {
+  margin-top: 8px;
+}
+.evidence-frame-wrap {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #1C1810;
+  aspect-ratio: 4/3;
+}
+.evidence-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+  display: block;
+}
+.evidence-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.evidence-label {
+  display: block;
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--color-text-3);
+  font-style: italic;
+}
