@@ -1,12 +1,9 @@
-// ──────────────────────────────────────────────────────────────
-// AssessmentPage — guided 5-step movement scan
-// The <video> element lives in App.tsx (persistent across pages).
-// This page renders only the canvas overlay and UI.
-// ──────────────────────────────────────────────────────────────
-
 import { useRef, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { RotateCcw } from 'lucide-react';
 import { useApp } from '../state/appContext';
 import { useAssessment } from '../hooks/useAssessment';
+import { Button } from '../components/ui/Button';
 import type { PoseDetectionResult } from '../lib/poseEngine';
 
 interface AssessmentPageProps {
@@ -25,14 +22,12 @@ export function AssessmentPage({ videoRef, detect }: AssessmentPageProps) {
     enabled: true,
   });
 
-  // Trigger analysis when assessment completes
   useEffect(() => {
     if (state.phase === 'complete' && result) {
       completeAssessment(result);
     }
   }, [state.phase, result, completeAssessment]);
 
-  // Auto-start on mount
   useEffect(() => {
     start();
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -44,29 +39,30 @@ export function AssessmentPage({ videoRef, detect }: AssessmentPageProps) {
   const showComplete    = state.phase === 'step-complete';
 
   return (
-    <div className="page assessment-page">
-      {/* Step progress indicator */}
-      <div className="step-progress-track">
+    <div className="max-w-3xl mx-auto px-5 py-5 space-y-4">
+      {/* Step progress */}
+      <div className="flex items-center justify-center gap-2">
         {Array.from({ length: state.totalSteps }).map((_, i) => (
-          <div
+          <motion.div
             key={i}
-            className={`step-progress-dot ${
+            initial={{ scale: 0.8 }}
+            animate={{ scale: 1 }}
+            className={`h-2 rounded-full transition-all duration-300 ${
               i < state.completedSteps
-                ? 'done'
+                ? 'w-8 bg-success'
                 : i === state.currentStepIndex
-                  ? 'active'
-                  : ''
+                  ? 'w-8 bg-brand'
+                  : 'w-4 bg-elevated'
             }`}
           />
         ))}
       </div>
 
-      {/* Camera feed — stream is re-attached here by useCamera on mount */}
+      {/* Camera feed */}
       <div className="camera-wrap">
         <video ref={videoRef} playsInline muted className="camera-feed" />
         <canvas ref={canvasRef} className="skeleton-overlay" />
 
-        {/* Calibration overlay */}
         {showCalibration && calibration && (
           <div className={`overlay-box prompts ${calibration.isReady ? 'ok' : 'warn'}`}>
             {calibration.prompts.length > 0 ? (
@@ -74,30 +70,24 @@ export function AssessmentPage({ videoRef, detect }: AssessmentPageProps) {
                 <p key={p} className="prompt-line">{p}</p>
               ))
             ) : (
-              <p className="prompt-line ok">Hold still…</p>
+              <p className="prompt-line ok">Hold still...</p>
             )}
           </div>
         )}
 
-        {/* Countdown */}
         {showCountdown && (
           <div className="overlay-box countdown">
             <span>{state.countdownSecondsLeft}</span>
           </div>
         )}
 
-        {/* Capture progress bar */}
         {showCapture && (
           <div className="capture-bar-wrap">
-            <div
-              className="capture-bar"
-              style={{ width: `${state.captureProgress * 100}%` }}
-            />
-            <span className="capture-label">Recording…</span>
+            <div className="capture-bar" style={{ width: `${state.captureProgress * 100}%` }} />
+            <span className="capture-label">Recording...</span>
           </div>
         )}
 
-        {/* Step complete flash */}
         {showComplete && (
           <div className="overlay-box step-done">
             <span className="step-done-check">✓</span>
@@ -105,7 +95,6 @@ export function AssessmentPage({ videoRef, detect }: AssessmentPageProps) {
           </div>
         )}
 
-        {/* Detection lost warning */}
         {detectionLost && !showCalibration && !showComplete && (
           <div className="overlay-box prompts warn">
             <p className="prompt-line">Body not detected — ensure you're fully in frame</p>
@@ -115,20 +104,27 @@ export function AssessmentPage({ videoRef, detect }: AssessmentPageProps) {
 
       {/* Step instruction card */}
       {state.currentStep && state.phase !== 'complete' && (
-        <div className="step-card">
-          <div className="step-card-header">
-            <span className="step-number">
+        <motion.div
+          key={state.currentStepIndex}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-surface border border-border rounded-xl p-5"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-semibold text-brand">
               Step {state.currentStepIndex + 1} / {state.totalSteps}
             </span>
-            <span className="step-name">{state.currentStep.name}</span>
+            <span className="text-sm font-bold text-text-1">{state.currentStep.name}</span>
           </div>
-          <p className="step-instruction">{state.currentStep.instruction}</p>
-        </div>
+          <p className="text-sm text-text-2">{state.currentStep.instruction}</p>
+        </motion.div>
       )}
 
-      <button className="btn ghost btn-sm assessment-reset" onClick={reset}>
-        Restart
-      </button>
+      <div className="flex justify-center">
+        <Button variant="ghost" size="sm" onClick={reset} leftIcon={<RotateCcw size={14} />}>
+          Restart
+        </Button>
+      </div>
     </div>
   );
 }

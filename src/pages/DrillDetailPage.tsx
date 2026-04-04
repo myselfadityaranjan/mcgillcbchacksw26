@@ -1,15 +1,8 @@
-// ──────────────────────────────────────────────────────────────
-// DrillDetailPage — drill instructions + "Why this drill?" block
-// ──────────────────────────────────────────────────────────────
-
+import { motion } from 'framer-motion';
+import { ChevronLeft, Clock, Repeat, AlertTriangle } from 'lucide-react';
 import { useApp } from '../state/appContext';
-import type { Severity } from '../types/analysis';
+import { Button } from '../components/ui/Button';
 
-const SEVERITY_COLOUR: Record<Severity, string> = {
-  significant: 'var(--red)',
-  moderate:    'var(--yellow)',
-  mild:        'var(--blue)',
-};
 
 export function DrillDetailPage() {
   const { state, navigate } = useApp();
@@ -22,116 +15,123 @@ export function DrillDetailPage() {
     return null;
   }
 
-  // Find this drill's recommendation to surface the personalised "why"
   const rec = plan?.recommendations.find((r) => r.drill.id === drill.id);
-
-  // Issues that this drill addresses, with their severity from the analysis
   const targetedIssues = analysis?.issues.filter(
     (i) => rec?.targetIssueIds.includes(i.id),
   ) ?? [];
 
   return (
-    <div className="page drill-detail-page">
-      <button className="btn ghost btn-back" onClick={() => navigate('results')}>
-        ← Results
-      </button>
+    <div className="max-w-2xl mx-auto px-5 py-6 space-y-6">
+      <Button variant="ghost" size="sm" onClick={() => navigate('results')} leftIcon={<ChevronLeft size={14} />}>
+        Results
+      </Button>
 
-      <div className="drill-detail-header">
-        <span className="drill-detail-area">{drill.bodyArea}</span>
-        <h2>{drill.name}</h2>
-        <p className="drill-detail-desc">{drill.description}</p>
+      {/* Header */}
+      <div>
+        <span className="text-xs font-semibold text-brand uppercase tracking-wide">{drill.bodyArea}</span>
+        <h2 className="text-2xl font-bold text-text-1 mt-1" style={{ fontFamily: "'DM Serif Display', serif" }}>
+          {drill.name}
+        </h2>
+        <p className="text-sm text-text-2 mt-2">{drill.description}</p>
       </div>
 
-      <div className="drill-detail-body">
-
-        {/* ── Why this drill? ──────────────────────────────── */}
-        {rec && (
-          <div className="detail-block why-block">
-            <h3>Why this drill?</h3>
-            <p className="why-reason">{rec.reason}</p>
-
-            {targetedIssues.length > 0 && (
-              <div className="why-targets">
-                {targetedIssues.map((issue) => (
-                  <div key={issue.id} className="why-target-row">
-                    <span
-                      className="why-target-dot"
-                      style={{ background: SEVERITY_COLOUR[issue.severity] }}
-                    />
-                    <div className="why-target-info">
-                      <span className="why-target-name">{issue.name}</span>
-                      <span
-                        className="why-target-sev"
-                        style={{ color: SEVERITY_COLOUR[issue.severity] }}
-                      >
-                        {issue.severity} · {Math.round(issue.confidence * 100)}% confidence
-                      </span>
-                    </div>
+      {/* Why this drill */}
+      {rec && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-brand/5 border border-brand/15 rounded-xl p-5 space-y-3"
+        >
+          <h3 className="text-xs font-bold uppercase tracking-wide text-brand">Why this drill?</h3>
+          <p className="text-sm text-text-2">{rec.reason}</p>
+          {targetedIssues.length > 0 && (
+            <div className="space-y-2">
+              {targetedIssues.map((issue) => (
+                <div key={issue.id} className="flex items-center gap-3">
+                  <span className={`w-2 h-2 rounded-full ${
+                    issue.severity === 'significant' ? 'bg-danger' : issue.severity === 'moderate' ? 'bg-warning' : 'bg-[#5B8CB0]'
+                  }`} />
+                  <div className="flex-1 min-w-0">
+                    <span className="text-sm font-medium text-text-1">{issue.name}</span>
+                    <span className="text-xs text-text-3 ml-2">{issue.severity} · {Math.round(issue.confidence * 100)}%</span>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ── Setup ─────────────────────────────────────────── */}
-        <div className="detail-block">
-          <h3>Targets</h3>
-          <div className="drill-target-issues">
-            {drill.targetIssues.map((id) => (
-              <span key={id} className="drill-target-tag">{id.replace(/-/g, ' ')}</span>
-            ))}
-          </div>
-        </div>
-
-        <div className="detail-block">
-          <h3>Setup</h3>
-          <p>{drill.setupInstructions}</p>
-        </div>
-
-        {/* ── Coaching cues ──────────────────────────────────── */}
-        <div className="detail-block">
-          <h3>Key cues to focus on</h3>
-          <ol className="cue-list">
-            {drill.coachingCues.map((cue, i) => (
-              <li key={i}>{cue}</li>
-            ))}
-          </ol>
-        </div>
-
-        {/* ── Duration / reps ────────────────────────────────── */}
-        <div className="detail-block detail-meta">
-          <div className="meta-item">
-            <span className="meta-label">Duration</span>
-            <span className="meta-value">{drill.durationSeconds}s</span>
-          </div>
-          {drill.reps && (
-            <div className="meta-item">
-              <span className="meta-label">Reps / sets</span>
-              <span className="meta-value">{drill.reps}</span>
+                </div>
+              ))}
             </div>
           )}
-        </div>
+        </motion.div>
+      )}
 
-        {/* ── Safety ─────────────────────────────────────────── */}
-        {drill.unsafeConditions.length > 0 && (
-          <div className="detail-block safety-block">
-            <h3>Stop if you experience</h3>
-            <ul className="safety-list">
-              {drill.unsafeConditions.map((c, i) => (
-                <li key={i}>{c}</li>
-              ))}
-            </ul>
+      {/* Targets */}
+      <div className="flex flex-wrap gap-2">
+        {drill.targetIssues.map((id) => (
+          <span key={id} className="text-xs font-medium px-3 py-1 rounded-full bg-elevated border border-border text-text-2 capitalize">
+            {id.replace(/-/g, ' ')}
+          </span>
+        ))}
+      </div>
+
+      {/* Setup */}
+      <div className="bg-surface border border-border rounded-xl p-5">
+        <h3 className="text-xs font-bold uppercase tracking-wide text-text-3 mb-3">Setup</h3>
+        <p className="text-sm text-text-2 leading-relaxed">{drill.setupInstructions}</p>
+      </div>
+
+      {/* Coaching cues */}
+      <div className="bg-surface border border-border rounded-xl p-5">
+        <h3 className="text-xs font-bold uppercase tracking-wide text-text-3 mb-3">Key cues</h3>
+        <ol className="space-y-3">
+          {drill.coachingCues.map((cue, i) => (
+            <li key={i} className="flex gap-3 text-sm text-text-2">
+              <span className="w-5 h-5 rounded-full bg-brand/10 flex items-center justify-center text-brand text-xs font-bold shrink-0 mt-0.5">
+                {i + 1}
+              </span>
+              {cue}
+            </li>
+          ))}
+        </ol>
+      </div>
+
+      {/* Meta */}
+      <div className="flex gap-3">
+        <div className="flex-1 bg-surface border border-border rounded-xl p-4 flex items-center gap-3">
+          <Clock size={16} className="text-text-3" />
+          <div>
+            <p className="text-xs text-text-3">Duration</p>
+            <p className="text-sm font-bold text-text-1">{drill.durationSeconds}s</p>
+          </div>
+        </div>
+        {drill.reps && (
+          <div className="flex-1 bg-surface border border-border rounded-xl p-4 flex items-center gap-3">
+            <Repeat size={16} className="text-text-3" />
+            <div>
+              <p className="text-xs text-text-3">Reps</p>
+              <p className="text-sm font-bold text-text-1">{drill.reps}</p>
+            </div>
           </div>
         )}
       </div>
 
-      <button
-        className="btn primary btn-lg"
-        onClick={() => navigate('coaching')}
-      >
+      {/* Safety */}
+      {drill.unsafeConditions.length > 0 && (
+        <div className="bg-danger/5 border border-danger/15 rounded-xl p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <AlertTriangle size={14} className="text-danger" />
+            <h3 className="text-xs font-bold uppercase tracking-wide text-danger">Stop if you experience</h3>
+          </div>
+          <ul className="space-y-2">
+            {drill.unsafeConditions.map((c, i) => (
+              <li key={i} className="text-sm text-text-2 flex gap-2">
+                <span className="text-danger">•</span>{c}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <Button fullWidth size="lg" onClick={() => navigate('coaching')}>
         Start Live Coaching →
-      </button>
+      </Button>
     </div>
   );
 }
