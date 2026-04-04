@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { X, Pause, Play, CheckCircle2 } from 'lucide-react'
+import { X, Pause, Play, CheckCircle2, Volume2, VolumeX } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { CameraFeed } from '@/components/camera/CameraFeed'
 import { PoseCanvas } from '@/components/camera/PoseCanvas'
@@ -14,7 +14,8 @@ import { MetricPill } from '@/components/ui/MetricPill'
 import { useCamera } from '@/hooks/useCamera'
 import { useCoaching } from '@/hooks/useCoaching'
 import { useOverlayRenderer } from '@/hooks/useOverlayRenderer'
-import { useCoachingStore } from '@/store'
+import { useSpeechCue } from '@/hooks/useSpeechCue'
+import { useCoachingStore, useUiStore } from '@/store'
 import { getDrillById } from '@/data/drills'
 import { cn } from '@/lib/cn'
 import type { DrillId, CoachingFrameState, FormQuality } from '@/types'
@@ -79,6 +80,7 @@ export default function Coaching() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   const [repCount, setRepCount] = useState(0)
+  const { audioFeedback, toggleAudioFeedback } = useUiStore()
 
   const {
     status,
@@ -103,6 +105,9 @@ export default function Coaching() {
     enabled: cameraState.permission === 'granted',
   })
 
+  // Audio coaching cues
+  const { speak, speakRaw } = useSpeechCue()
+
   // Start camera
   useEffect(() => {
     startCamera()
@@ -118,25 +123,44 @@ export default function Coaching() {
   const stableOnFrame = useCallback(onFrame, [onFrame])
   useMockCoachingEngine(drill?.id as DrillId ?? null, stableOnFrame)
 
-  // Track reps when quality returns to green; also push overlay state
+  // Track reps, speak cues, push overlay state
   const prevQualityRef = useRef<string | null>(null)
+  const prevCueIdRef = useRef<string | null>(null)
   useEffect(() => {
     if (!currentFrame) return
+
+    // Rep counting
     if (prevQualityRef.current === 'yellow' && currentFrame.quality === 'green') {
       setRepCount((r) => r + 1)
     }
+
+    // Audio: speak quality transitions
+    if (prevQualityRef.current !== currentFrame.quality) {
+      if (currentFrame.quality === 'green' && prevQualityRef.current !== null) {
+        speakRaw('Good form', 0.9)
+      } else if (currentFrame.quality === 'red') {
+        speakRaw('Stop — check your form', 1.05)
+      }
+    }
     prevQualityRef.current = currentFrame.quality
 
-    // Task 6 — push real frame landmarks to the overlay renderer.
-    // currentFrame.frame.landmarks is the raw landmark array from Person 1.
-    // If it's empty (mock mode), the renderer falls back to mock landmarks.
+    // Audio: speak new coaching cues (debounced inside hook)
+    const cue = currentFrame.activeCue
+    if (cue && cue.id !== prevCueIdRef.current) {
+      speak(cue)
+      prevCueIdRef.current = cue.id
+    } else if (!cue) {
+      prevCueIdRef.current = null
+    }
+
+    // Overlay
     pushCoachingFrame(
       currentFrame.quality,
       currentFrame.activeCue,
       currentFrame.frame.landmarks.length > 0 ? currentFrame.frame.landmarks : null,
       currentFrame.frame.confidence
     )
-  }, [currentFrame, pushCoachingFrame])
+  }, [currentFrame, pushCoachingFrame, speak, speakRaw])
 
   if (!drill) {
     return (
@@ -171,14 +195,23 @@ export default function Coaching() {
           <p className="text-text-1 text-sm font-bold">{drill.name}</p>
           <p className="text-text-3 text-xs">{drill.reps ? `${drill.reps} reps` : `${drill.durationSeconds}s hold`}</p>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => status === 'paused' ? resumeDrill() : pauseDrill()}
-          leftIcon={status === 'paused' ? <Play size={14} /> : <Pause size={14} />}
-        >
-          {status === 'paused' ? 'Resume' : 'Pause'}
-        </Button>
+        <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={toggleAudioFeedback}
+            leftIcon={audioFeedback ? <Volume2 size={14} className="text-brand" /> : <VolumeX size={14} />}
+            title={audioFeedback ? 'Voice cues on' : 'Voice cues off'}
+          />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => status === 'paused' ? resumeDrill() : pauseDrill()}
+            leftIcon={status === 'paused' ? <Play size={14} /> : <Pause size={14} />}
+          >
+            {status === 'paused' ? 'Resume' : 'Pause'}
+          </Button>
+        </div>
       </div>
 
       {/* Camera + overlay area */}

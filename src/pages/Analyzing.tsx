@@ -21,26 +21,68 @@ const analysisCopy = [
   'Generating corrective plan...',
 ]
 
-/** Minimal recommendation engine — Person 2 replaces with their full engine */
+/** Readable labels for issue IDs used in recommendation reasons */
+const ISSUE_LABELS: Record<string, string> = {
+  rounded_shoulders:    'rounded shoulders',
+  forward_head_posture: 'forward head posture',
+  anterior_pelvic_tilt: 'anterior pelvic tilt',
+  knee_valgus:          'knee valgus',
+  lateral_asymmetry:    'lateral asymmetry',
+}
+
+/**
+ * Recommendation engine — builds a full corrective plan from analysis results.
+ *
+ * Strategy:
+ *   1. Score every drill by how many detected issues it targets (weighted by severity)
+ *   2. Consolidate issueIds so each drill shows all issues it addresses
+ *   3. Always include at least one drill per detected issue
+ *   4. Sort by relevance score descending, cap at 5 recommendations
+ */
 function generatePlan(analysis: AnalysisResult): CorrectivePlan {
-  const seen = new Set<string>()
-  const recommendations: DrillRecommendation[] = []
-  let priority = 1
+  const severityWeight: Record<string, number> = {
+    significant: 3,
+    moderate: 2,
+    mild: 1,
+  }
+
+  // Build a score + issueId map for every drill
+  const drillScores = new Map<string, { score: number; issueIds: string[]; reasons: string[] }>()
 
   for (const issue of analysis.issues) {
-    const meta = DRILLS.filter((d) => d.targetIssues.includes(issue.id))
-    for (const drill of meta) {
-      if (!seen.has(drill.id)) {
-        seen.add(drill.id)
-        recommendations.push({
-          drill,
-          issueIds: [issue.id],
-          priority: priority++,
-          reason: `Addresses your detected pattern: ${issue.id.replace(/_/g, ' ')}`,
-        })
+    const weight = severityWeight[issue.severity] ?? 1
+    const matchingDrills = DRILLS.filter((d) => d.targetIssues.includes(issue.id))
+
+    for (const drill of matchingDrills) {
+      const existing = drillScores.get(drill.id) ?? { score: 0, issueIds: [], reasons: [] }
+      existing.score += weight
+      if (!existing.issueIds.includes(issue.id)) {
+        existing.issueIds.push(issue.id)
+        existing.reasons.push(ISSUE_LABELS[issue.id] ?? issue.id.replace(/_/g, ' '))
       }
+      drillScores.set(drill.id, existing)
     }
   }
+
+  // Sort drills by score descending
+  const sorted = [...drillScores.entries()].sort((a, b) => b[1].score - a[1].score)
+
+  const recommendations: DrillRecommendation[] = sorted
+    .slice(0, 5)
+    .map(([drillId, { issueIds, reasons }], index) => {
+      const drill = DRILLS.find((d) => d.id === drillId)!
+      const reasonText =
+        reasons.length === 1
+          ? `Directly targets your ${reasons[0]} pattern`
+          : `Addresses ${reasons.slice(0, -1).join(', ')} and ${reasons[reasons.length - 1]}`
+
+      return {
+        drill,
+        issueIds,
+        priority: index + 1,
+        reason: reasonText,
+      }
+    })
 
   return {
     sessionId: analysis.sessionId,
