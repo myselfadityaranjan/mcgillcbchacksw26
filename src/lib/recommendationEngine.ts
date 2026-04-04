@@ -5,6 +5,7 @@
 import type { DetectedIssue, IssueId, Severity } from '../types/analysis';
 import type { Drill, DrillId, DrillRecommendation } from '../types/plan';
 import { DRILLS } from './drills';
+import { VIDEO_DRILL_IDS } from './drillVideos';
 
 // ── Issue → drill mappings ────────────────────────────────────
 
@@ -61,7 +62,7 @@ const MAPPINGS: Record<IssueId, IssueMapping> = {
 
 // ── Wellness recommendations (no issues detected) ─────────────
 
-const WELLNESS_DRILL_IDS: DrillId[] = ['wall-angel', 'hip-flexor-stretch'];
+const WELLNESS_DRILL_IDS: DrillId[] = ['wall-angel', 'chin-tuck-exercise', 'squat-alignment-drill'];
 
 /**
  * Return general wellness drill recommendations for users with no
@@ -117,17 +118,37 @@ export function buildRecommendations(
     }
   }
 
+  // Boost drills that have video demos (they provide better UX)
+  for (const id of VIDEO_DRILL_IDS) {
+    if (drillScores.has(id)) {
+      drillScores.set(id, (drillScores.get(id) ?? 0) + 1.5);
+    }
+  }
+
   // Sort by score descending
   const sorted = [...drillScores.entries()]
     .sort((a, b) => b[1] - a[1])
     .slice(0, 3);
 
+  // Ensure at least 2 video-backed drills appear when possible
+  const videoInTop3 = sorted.filter(([id]) => VIDEO_DRILL_IDS.includes(id)).length;
+  if (videoInTop3 < 2) {
+    const missing = VIDEO_DRILL_IDS.filter(
+      (id) => !sorted.some(([s]) => s === id) && DRILLS[id],
+    );
+    for (const id of missing) {
+      if (sorted.length >= 3) sorted.pop();
+      sorted.push([id, 0]);
+      if (sorted.filter(([s]) => VIDEO_DRILL_IDS.includes(s)).length >= 2) break;
+    }
+  }
+
   return sorted.map(([drillId], idx) => {
     const drill = DRILLS[drillId] as Drill;
     return {
       drill,
-      reason: drillReasons.get(drillId) ?? 'Supports overall movement quality.',
-      targetIssueIds: drillIssueIds.get(drillId) ?? [],
+      reason: drillReasons.get(drillId) ?? 'Recommended for general movement quality — includes a video demonstration.',
+      targetIssueIds: drillIssueIds.get(drillId) ?? drill.targetIssues,
       priority: idx + 1,
     };
   });

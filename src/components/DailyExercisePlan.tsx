@@ -28,6 +28,7 @@ const EXERCISE_LIBRARY: DailyExercise[] = [
   { name: 'Single Leg Balance', duration: '30s each side', icon: 'strength', targetIssues: ['knee-valgus', 'lateral-asymmetry'], instruction: 'Stand on one leg, slight knee bend. Keep hips level. Eyes forward.' },
   { name: 'Thoracic Rotation', duration: '30s each side', sets: '8 reps', icon: 'stretch', targetIssues: ['rounded-shoulders', 'lateral-asymmetry', 'thoracic-kyphosis'], instruction: 'Side-lying, knees stacked. Rotate top arm open, following with your gaze.' },
   { name: 'Squat to Stand', duration: '60s', sets: '6 reps', icon: 'stretch', targetIssues: ['knee-valgus', 'anterior-pelvic-tilt'], instruction: 'Hinge down, grab toes. Squat deep, chest up. Stand and repeat.' },
+  { name: 'Squat Alignment Drill', duration: '40s', sets: '10 reps', icon: 'strength', targetIssues: ['knee-valgus', 'lateral-asymmetry'], instruction: 'Feet hip-width, toes out. Slow controlled squats pushing knees outward over toes.' },
   { name: 'Neck Retraction Hold', duration: '20s', sets: '5 reps', icon: 'strength', targetIssues: ['neck-flexion', 'forward-head-posture'], instruction: 'Seated tall. Pull head straight back and tuck chin. Hold 5 seconds. Release slowly.' },
   { name: 'Prone Y-T-W Raises', duration: '45s', sets: '8 reps', icon: 'strength', targetIssues: ['thoracic-kyphosis', 'rounded-shoulders'], instruction: 'Lie face-down, arms extended. Raise arms into Y, then T, then W shapes. Squeeze shoulder blades.' },
 ];
@@ -83,6 +84,19 @@ function buildWeeklyPlan(issues: DetectedIssue[], _recs: DrillRecommendation[]):
       if (cooldown) dayExercises.push(cooldown);
     } else {
       dayExercises = allExercises.slice(0, 4);
+    }
+
+    // Ensure at least 2 of the 3 video-backed exercises appear each active day
+    const VIDEO_EXERCISE_NAMES = ['Chin Tucks', 'Wall Angel', 'Squat Alignment Drill'];
+    const videoInDay = dayExercises.filter((e) => VIDEO_EXERCISE_NAMES.includes(e.name)).length;
+    if (videoInDay < 2) {
+      const videoExercises = EXERCISE_LIBRARY.filter(
+        (e) => VIDEO_EXERCISE_NAMES.includes(e.name) && !dayExercises.some((d) => d.name === e.name),
+      );
+      for (const ve of videoExercises) {
+        if (dayExercises.filter((e) => VIDEO_EXERCISE_NAMES.includes(e.name)).length >= 2) break;
+        dayExercises.push(ve);
+      }
     }
 
     // Estimate minutes

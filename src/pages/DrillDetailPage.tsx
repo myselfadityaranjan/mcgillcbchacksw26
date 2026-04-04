@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion';
-import { ChevronLeft, Clock, Repeat, AlertTriangle } from 'lucide-react';
+import { ChevronLeft, Clock, Repeat, AlertTriangle, Play } from 'lucide-react';
 import { useApp } from '../state/appContext';
 import { Button } from '../components/ui/Button';
+import { getDrillVideo } from '../lib/drillVideos';
 
 
 export function DrillDetailPage() {
@@ -34,6 +35,28 @@ export function DrillDetailPage() {
         </h2>
         <p className="text-sm text-text-2 mt-2">{drill.description}</p>
       </div>
+
+      {/* Video demo */}
+      {getDrillVideo(drill.id) && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-xl overflow-hidden border border-border bg-[#1C1810] relative"
+        >
+          <div className="flex items-center gap-2 px-4 py-2.5 bg-[#1C1810] border-b border-white/10">
+            <Play size={12} className="text-brand" />
+            <span className="text-xs font-semibold text-white/70">Demo Video</span>
+          </div>
+          <video
+            src={getDrillVideo(drill.id)!}
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full max-h-[360px] object-contain bg-[#1C1810]"
+          />
+        </motion.div>
+      )}
 
       {/* Why this drill */}
       {rec && (
