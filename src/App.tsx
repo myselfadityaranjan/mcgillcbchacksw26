@@ -1,146 +1,75 @@
-import { useRef } from 'react';
+// ──────────────────────────────────────────────────────────────
+// App.tsx — router shell.
+//
+// Camera and pose-engine instances are created once here and
+// shared across pages. useCamera re-attaches the stream whenever
+// the video element re-mounts after a page transition.
+// ──────────────────────────────────────────────────────────────
+
+import { AppProvider, useApp } from './state/appContext';
 import { useCamera } from './hooks/useCamera';
 import { usePoseEngine } from './hooks/usePoseEngine';
-import { useAssessment } from './hooks/useAssessment';
 
-export function App() {
+import { LandingPage }     from './pages/LandingPage';
+import { SetupPage }       from './pages/SetupPage';
+import { AssessmentPage }  from './pages/AssessmentPage';
+import { AnalyzingPage }   from './pages/AnalyzingPage';
+import { ResultsPage }     from './pages/ResultsPage';
+import { DrillDetailPage } from './pages/DrillDetailPage';
+import { CoachingPage }    from './pages/CoachingPage';
+import { CompletionPage }  from './pages/CompletionPage';
+
+function InnerApp() {
+  const { state, navigate } = useApp();
   const { videoRef, isActive, error: camErr, start: startCam } = useCamera();
-  const { isLoaded, isLoading, error: modelErr, detect } = usePoseEngine();
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  const { state, calibration, result, start, reset } = useAssessment({
-    videoRef,
-    canvasRef,
-    detect,
-    enabled: isActive && isLoaded,
-  });
-
-  const ready = isActive && isLoaded;
-  const showStep =
-    state.phase !== 'idle' && state.phase !== 'complete' && state.currentStep;
+  const { isLoaded, isLoading, error: modelErr, detect }        = usePoseEngine();
 
   return (
-    <div className="app">
-      {/* ── Header ──────────────────────────────────────── */}
-      <header className="header">
-        <h1>StrainSense</h1>
-        <p className="subtitle">Real-Time Corrective Movement Intelligence</p>
-      </header>
-
-      {/* ── Errors ──────────────────────────────────────── */}
-      {(camErr ?? modelErr) && (
-        <div className="banner error">{camErr ?? modelErr}</div>
-      )}
-
-      {/* ── Pre-camera state ────────────────────────────── */}
-      {!isActive && !camErr && (
-        <div className="center-col">
-          <p>
-            StrainSense needs your camera to analyse your posture and movement.
-            <br />
-            No video is stored or sent to any server.
-          </p>
-          <button className="btn primary" onClick={startCam}>
-            Enable Camera
+    <div className="app-shell">
+      {state.screen !== 'landing' && (
+        <header className="app-header">
+          <button className="brand" onClick={() => navigate('landing')}>
+            StrainSense
           </button>
-        </div>
+        </header>
       )}
 
-      {/* ── Loading model ───────────────────────────────── */}
-      {isActive && isLoading && (
-        <div className="banner info">Loading pose model&hellip;</div>
+      {state.screen === 'landing' && <LandingPage />}
+
+      {state.screen === 'setup' && (
+        <SetupPage
+          videoRef={videoRef}
+          isActive={isActive}
+          isLoading={isLoading}
+          isLoaded={isLoaded}
+          camErr={camErr}
+          modelErr={modelErr}
+          startCam={startCam}
+          onReady={() => navigate('assessment')}
+        />
       )}
 
-      {/* ── Camera + overlay ────────────────────────────── */}
-      {isActive && (
-        <div className="camera-wrap">
-          <video
-            ref={videoRef}
-            playsInline
-            muted
-            className="camera-feed"
-          />
-          <canvas ref={canvasRef} className="skeleton-overlay" />
-
-          {/* Calibration prompts */}
-          {state.phase === 'calibrating' && calibration && (
-            <div className="overlay-box prompts">
-              {calibration.prompts.length > 0 ? (
-                calibration.prompts.map((p) => <p key={p}>{p}</p>)
-              ) : (
-                <p className="ok">Hold still&hellip;</p>
-              )}
-            </div>
-          )}
-
-          {/* Countdown */}
-          {state.phase === 'countdown' && (
-            <div className="overlay-box countdown">
-              <span>{state.countdownSecondsLeft}</span>
-            </div>
-          )}
-
-          {/* Capture progress bar */}
-          {state.phase === 'capturing' && (
-            <div className="capture-bar-wrap">
-              <div
-                className="capture-bar"
-                style={{ width: `${state.captureProgress * 100}%` }}
-              />
-              <span className="capture-label">Recording&hellip;</span>
-            </div>
-          )}
-
-          {/* Step complete flash */}
-          {state.phase === 'step-complete' && (
-            <div className="overlay-box done">
-              <p>Step {state.completedSteps} of {state.totalSteps} complete</p>
-            </div>
-          )}
-        </div>
+      {state.screen === 'assessment' && (
+        <AssessmentPage videoRef={videoRef} detect={detect} />
       )}
 
-      {/* ── Step instruction ────────────────────────────── */}
-      {showStep && state.currentStep && (
-        <div className="step-card">
-          <h2>
-            Step {state.currentStepIndex + 1}/{state.totalSteps}:{' '}
-            {state.currentStep.name}
-          </h2>
-          <p>{state.currentStep.instruction}</p>
-        </div>
+      {state.screen === 'analyzing'    && <AnalyzingPage />}
+      {state.screen === 'results'      && <ResultsPage />}
+      {state.screen === 'drill-detail' && <DrillDetailPage />}
+
+      {state.screen === 'coaching' && (
+        <CoachingPage videoRef={videoRef} detect={detect} />
       )}
 
-      {/* ── Start / reset controls ──────────────────────── */}
-      {ready && state.phase === 'idle' && (
-        <div className="center-col">
-          <button className="btn primary" onClick={start}>
-            Start Assessment
-          </button>
-        </div>
-      )}
-
-      {/* ── Results summary ─────────────────────────────── */}
-      {state.phase === 'complete' && result && (
-        <div className="results-card">
-          <h2>Assessment Complete</h2>
-          <p>
-            Captured <strong>{result.captures.length}</strong> movements in{' '}
-            <strong>{(result.totalDuration / 1_000).toFixed(1)}s</strong>
-          </p>
-          <ul>
-            {result.captures.map((c) => (
-              <li key={c.stepId}>
-                {c.stepId} &mdash; {c.frames.length} frames
-                {c.representativeFrame?.imageDataUrl && ' (snapshot saved)'}
-              </li>
-            ))}
-          </ul>
-          <button className="btn primary" onClick={reset}>
-            Start Over
-          </button>
-        </div>
-      )}
+      {state.screen === 'completion' && <CompletionPage />}
     </div>
+  );
+}
+
+export function App() {
+  return (
+    <AppProvider>
+      <InnerApp />
+    </AppProvider>
   );
 }

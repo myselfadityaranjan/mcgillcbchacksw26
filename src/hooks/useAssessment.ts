@@ -8,7 +8,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { AssessmentFlow } from '../lib/assessmentFlow';
 import { checkCalibration, computeStability } from '../lib/calibration';
 import { captureVideoFrame } from '../lib/snapshot';
-import { drawSkeleton } from '../lib/skeletonRenderer';
+import { renderAssessmentOverlay } from '../lib/overlayRenderer';
 import type { PoseDetectionResult } from '../lib/poseEngine';
 import type {
   AssessmentState,
@@ -131,11 +131,11 @@ export function useAssessment({
           ctx.clearRect(0, 0, canvas.width, canvas.height);
 
           if (detection) {
-            drawSkeleton(
+            renderAssessmentOverlay(
               ctx,
-              detection.normalizedLandmarks,
               canvas.width,
               canvas.height,
+              detection.normalizedLandmarks,
             );
           }
         }
