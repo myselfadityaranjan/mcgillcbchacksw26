@@ -13,10 +13,12 @@ export function AppShell() {
         position="top-right"
         toastOptions={{
           style: {
-            background: '#161B27',
-            color: '#E8EDF8',
-            border: '1px solid rgba(99, 120, 186, 0.25)',
-            borderRadius: '10px',
+            background: '#FFFFFF',
+            color: '#1C1810',
+            border: '1px solid rgba(161,143,114,0.22)',
+            borderRadius: '12px',
+            boxShadow: '0 4px 16px rgba(100,80,50,0.10)',
+            fontSize: '13px',
           },
         }}
       />

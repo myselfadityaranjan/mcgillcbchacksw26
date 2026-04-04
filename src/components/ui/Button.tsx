@@ -16,40 +16,42 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary: [
+    // Sage green — the main brand action
     'bg-brand text-white',
     'hover:bg-brand-dark',
     'shadow-glow-brand hover:shadow-glow-brand',
-    'border border-brand/30',
+    'border border-brand/20',
   ].join(' '),
   secondary: [
-    'bg-bg-elevated text-text-1',
-    'hover:bg-bg-high',
-    'border border-border-strong hover:border-border-focus',
+    'bg-bg-surface text-text-1',
+    'hover:bg-bg-elevated',
+    'border border-border hover:border-border-strong',
+    'shadow-sm',
   ].join(' '),
   ghost: [
     'bg-transparent text-text-2',
     'hover:bg-bg-elevated hover:text-text-1',
-    'border border-transparent hover:border-border',
+    'border border-transparent',
   ].join(' '),
   danger: [
     'bg-danger text-white',
-    'hover:bg-danger/80',
+    'hover:bg-danger/85',
     'shadow-glow-danger',
-    'border border-danger/30',
+    'border border-danger/20',
   ].join(' '),
   success: [
-    'bg-success text-bg',
-    'hover:bg-success/80',
+    'bg-success text-white',   // white text on forest green — always legible
+    'hover:bg-success/85',
     'shadow-glow-success',
-    'border border-success/30',
+    'border border-success/20',
   ].join(' '),
 }
 
 const sizeClasses: Record<ButtonSize, string> = {
-  sm: 'h-8 px-3 text-xs gap-1.5',
-  md: 'h-10 px-4 text-sm gap-2',
-  lg: 'h-12 px-6 text-base gap-2',
-  xl: 'h-14 px-8 text-lg gap-2.5',
+  sm: 'h-8 px-4 text-xs gap-1.5 rounded-full',
+  md: 'h-10 px-5 text-sm gap-2 rounded-full',
+  lg: 'h-12 px-7 text-base gap-2 rounded-full',
+  xl: 'h-14 px-9 text-lg gap-2.5 rounded-full',
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -73,13 +75,13 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <motion.button
         ref={ref}
-        whileHover={!isDisabled ? { scale: 1.01 } : undefined}
-        whileTap={!isDisabled ? { scale: 0.98 } : undefined}
-        transition={{ duration: 0.1 }}
+        whileHover={!isDisabled ? { scale: 1.02 } : undefined}
+        whileTap={!isDisabled ? { scale: 0.97 } : undefined}
+        transition={{ duration: 0.12, ease: 'easeOut' }}
         className={cn(
           // Base
           'inline-flex items-center justify-center',
-          'rounded-lg font-medium',
+          'font-medium tracking-wide',
           'transition-all duration-200',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-bg',
           'select-none cursor-pointer',
@@ -88,7 +90,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           // Size
           sizeClasses[size],
           // State
-          isDisabled && 'opacity-50 cursor-not-allowed pointer-events-none',
+          isDisabled && 'opacity-45 cursor-not-allowed pointer-events-none',
           fullWidth && 'w-full',
           className
         )}
