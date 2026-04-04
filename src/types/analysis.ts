@@ -2,6 +2,8 @@
 // Analysis types — Task 2 output, consumed by Tasks 3–6
 // ──────────────────────────────────────────────────────────────
 
+import type { NormalizedLandmark } from './pose';
+
 export type IssueId =
   | 'rounded-shoulders'
   | 'forward-head-posture'
@@ -29,6 +31,8 @@ export interface DetectedIssue {
   evidenceImageUrl?: string;
   /** Raw metric values used for detection (for debugging / display) */
   metrics: Record<string, number>;
+  /** Normalized landmarks from the evidence frame — used by AnnotatedEvidence to draw skeleton overlay */
+  evidenceLandmarks?: NormalizedLandmark[];
 }
 
 // ── Derived biomechanical metrics ────────────────────────────

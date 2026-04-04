@@ -1,5 +1,6 @@
 // ──────────────────────────────────────────────────────────────
 // CoachingPage — live drill coaching with form feedback overlay
+//               + good-form streak gamification
 // The <video> lives in App.tsx (persistent). This page renders
 // the canvas overlay + coaching UI.
 // ──────────────────────────────────────────────────────────────
@@ -20,7 +21,7 @@ export function CoachingPage({ videoRef, detect }: CoachingPageProps) {
   const drill     = state.selectedDrill;
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const { currentFrame, session, elapsed, finishSession, reset } = useLiveCoaching({
+  const { currentFrame, session, elapsed, finishSession, reset, streak } = useLiveCoaching({
     videoRef,
     canvasRef,
     detect,
@@ -46,6 +47,10 @@ export function CoachingPage({ videoRef, detect }: CoachingPageProps) {
   const formState    = currentFrame?.formState ?? 'green';
   const qualityScore = currentFrame?.qualityScore ?? 100;
 
+  // Format streak seconds for display
+  const fmtStreak = (s: number) =>
+    s >= 10 ? `${Math.floor(s)}s` : `${s.toFixed(1)}s`;
+
   return (
     <div className="page coaching-page">
       {/* Top bar */}
@@ -67,7 +72,6 @@ export function CoachingPage({ videoRef, detect }: CoachingPageProps) {
         <video ref={videoRef} playsInline muted className="camera-feed" />
         <canvas ref={canvasRef} className="skeleton-overlay" />
 
-        {/* No body detected warning */}
         {!currentFrame && (
           <div className="overlay-box prompts warn">
             <p className="prompt-line">Step back so your full body is visible</p>
@@ -83,7 +87,7 @@ export function CoachingPage({ videoRef, detect }: CoachingPageProps) {
         />
       </div>
 
-      {/* Quality row */}
+      {/* Quality + form state row */}
       <div className="coaching-quality-row">
         <div className={`quality-indicator form-${formState}`}>
           <span className="quality-dot" />
@@ -96,6 +100,25 @@ export function CoachingPage({ videoRef, detect }: CoachingPageProps) {
           </span>
         </div>
         <div className="quality-score">{qualityScore}</div>
+      </div>
+
+      {/* ── Streak HUD ──────────────────────────────────────── */}
+      <div className="streak-hud">
+        <div className={`streak-current ${formState === 'green' && streak.current > 0 ? 'streak-active' : ''}`}>
+          <span className="streak-icon">🔥</span>
+          <span className="streak-val">{fmtStreak(streak.current)}</span>
+          <span className="streak-sub">streak</span>
+        </div>
+        <div className="streak-divider" />
+        <div className="streak-stat">
+          <span className="streak-stat-val">{fmtStreak(streak.best)}</span>
+          <span className="streak-stat-label">best</span>
+        </div>
+        <div className="streak-divider" />
+        <div className="streak-stat">
+          <span className="streak-stat-val">{streak.recoveries}</span>
+          <span className="streak-stat-label">recoveries</span>
+        </div>
       </div>
 
       <button className="btn ghost btn-sm coaching-finish" onClick={finishSession}>

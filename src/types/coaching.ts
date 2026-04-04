@@ -45,4 +45,10 @@ export interface CoachingSession {
   isComplete: boolean;
   /** Best cue surfaced (most recent red → yellow → green progression cue) */
   lastCue: LiveCue | null;
+  /** Seconds of continuous good form at session end (0 if ended in non-green) */
+  currentStreak: number;
+  /** Peak consecutive good-form streak this session, in seconds */
+  bestStreak: number;
+  /** Number of times the user recovered form from yellow/red back to green */
+  recoveries: number;
 }

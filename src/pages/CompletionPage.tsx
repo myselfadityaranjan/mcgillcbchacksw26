@@ -1,5 +1,6 @@
 // ──────────────────────────────────────────────────────────────
-// CompletionPage — session summary after coaching completes
+// CompletionPage — session summary with score, time distribution,
+//                  good-form streak stats, and top cue reminder
 // ──────────────────────────────────────────────────────────────
 
 import { useApp } from '../state/appContext';
@@ -21,20 +22,25 @@ export function CompletionPage() {
   const label   = scoreLabel(finalScore);
   const message = scoreMessage(finalScore);
 
-  const totalMs = session.timeInGreen + session.timeInYellow + session.timeInRed;
+  const totalMs   = session.timeInGreen + session.timeInYellow + session.timeInRed;
   const pctGreen  = totalMs ? Math.round((session.timeInGreen  / totalMs) * 100) : 0;
   const pctYellow = totalMs ? Math.round((session.timeInYellow / totalMs) * 100) : 0;
   const pctRed    = totalMs ? Math.round((session.timeInRed    / totalMs) * 100) : 0;
 
-  // Next recommended drill (the one after the current one in priority)
-  const nextRec = plan?.recommendations.find(
-    (r) => r.drill.id !== drill.id,
-  );
+  const nextRec = plan?.recommendations.find((r) => r.drill.id !== drill.id);
+
+  const fmtStreak = (s: number) =>
+    s >= 10 ? `${Math.floor(s)}s` : `${s.toFixed(1)}s`;
 
   return (
     <div className="page completion-page">
+      {/* ── Score ring ──────────────────────────────────────── */}
       <div className="completion-header">
-        <div className={`score-ring score-${finalScore >= 85 ? 'great' : finalScore >= 65 ? 'good' : 'needs-work'}`}>
+        <div
+          className={`score-ring score-${
+            finalScore >= 85 ? 'great' : finalScore >= 65 ? 'good' : 'needs-work'
+          }`}
+        >
           <span className="score-number">{finalScore}</span>
           <span className="score-max">/100</span>
         </div>
@@ -42,9 +48,10 @@ export function CompletionPage() {
         <p className="completion-message">{message}</p>
       </div>
 
+      {/* ── Time distribution ───────────────────────────────── */}
       <div className="completion-stats">
         <div className="stat-row">
-          <span className="stat-label">Time in good form</span>
+          <span className="stat-label">Good form</span>
           <div className="stat-bar-wrap">
             <div className="stat-bar green-bar" style={{ width: `${pctGreen}%` }} />
           </div>
@@ -66,6 +73,38 @@ export function CompletionPage() {
         </div>
       </div>
 
+      {/* ── Streak summary ──────────────────────────────────── */}
+      {(session.bestStreak > 0 || session.recoveries > 0) && (
+        <div className="completion-streak">
+          <span className="tip-label">Streak Summary</span>
+          <div className="streak-summary-row">
+            <div className="streak-summary-stat">
+              <span className="streak-summary-val">{fmtStreak(session.bestStreak)}</span>
+              <span className="streak-summary-label">best streak</span>
+            </div>
+            <div className="streak-summary-divider" />
+            <div className="streak-summary-stat">
+              <span className="streak-summary-val">{session.recoveries}</span>
+              <span className="streak-summary-label">
+                {session.recoveries === 1 ? 'recovery' : 'recoveries'}
+              </span>
+            </div>
+            {pctGreen > 0 && (
+              <>
+                <div className="streak-summary-divider" />
+                <div className="streak-summary-stat">
+                  <span className="streak-summary-val" style={{ color: 'var(--green)' }}>
+                    {pctGreen}%
+                  </span>
+                  <span className="streak-summary-label">in green</span>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Top cue reminder ────────────────────────────────── */}
       {session.lastCue && (
         <div className="completion-tip">
           <span className="tip-label">Top cue to remember</span>
@@ -73,6 +112,7 @@ export function CompletionPage() {
         </div>
       )}
 
+      {/* ── Actions ─────────────────────────────────────────── */}
       <div className="completion-actions">
         {nextRec ? (
           <button

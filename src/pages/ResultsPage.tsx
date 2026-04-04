@@ -1,10 +1,13 @@
 // ──────────────────────────────────────────────────────────────
-// ResultsPage — issue cards + drill recommendations
+// ResultsPage — body strain map + enhanced issue cards +
+//               "why this drill?" cards + drill recommendations
 // ──────────────────────────────────────────────────────────────
 
 import { useApp } from '../state/appContext';
 import type { DetectedIssue, Severity } from '../types/analysis';
 import type { DrillRecommendation } from '../types/plan';
+import { BodyStrainMap } from '../components/BodyStrainMap';
+import { AnnotatedEvidence } from '../components/AnnotatedEvidence';
 
 // ── Sub-components ────────────────────────────────────────────
 
@@ -25,24 +28,32 @@ function IssueCard({ issue }: { issue: DetectedIssue }) {
       </div>
       <p className="issue-explanation">{issue.explanation}</p>
       <p className="issue-meaning">{issue.meaning}</p>
-      {issue.evidenceImageUrl && (
-        <div className="issue-evidence">
-          <img
-            src={issue.evidenceImageUrl}
-            alt={`Evidence frame for ${issue.name}`}
-            className="evidence-img"
-          />
-          <span className="evidence-label">Evidence frame — {issue.evidenceStepId.replace('-', ' ')}</span>
-        </div>
-      )}
+      {/* Annotated evidence frame — replaces plain <img> */}
+      {issue.evidenceImageUrl && <AnnotatedEvidence issue={issue} />}
     </div>
   );
 }
 
-function DrillCard({ rec, onSelect }: { rec: DrillRecommendation; onSelect: () => void }) {
+function DrillCard({
+  rec,
+  issues,
+  onSelect,
+}: {
+  rec: DrillRecommendation;
+  issues: DetectedIssue[];
+  onSelect: () => void;
+}) {
+  // Find the detected issues that this drill targets
+  const targeted = issues.filter((i) => rec.targetIssueIds.includes(i.id));
+
   return (
-    <div className="drill-card" onClick={onSelect} role="button" tabIndex={0}
-      onKeyDown={(e) => e.key === 'Enter' && onSelect()}>
+    <div
+      className="drill-card"
+      onClick={onSelect}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => e.key === 'Enter' && onSelect()}
+    >
       <div className="drill-card-header">
         <span className="drill-priority">#{rec.priority}</span>
         <div>
@@ -51,7 +62,27 @@ function DrillCard({ rec, onSelect }: { rec: DrillRecommendation; onSelect: () =
         </div>
         <span className="drill-arrow">→</span>
       </div>
+
+      {/* Why this drill was chosen */}
       <p className="drill-reason">{rec.reason}</p>
+
+      {/* Targeted issue chips */}
+      {targeted.length > 0 && (
+        <div className="drill-targets">
+          <span className="drill-targets-label">Addresses:</span>
+          <div className="drill-target-chips">
+            {targeted.map((issue) => (
+              <span
+                key={issue.id}
+                className={`drill-target-chip chip-${issue.severity}`}
+              >
+                {issue.name}
+                <span className="chip-sev"> · {issue.severity}</span>
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -81,9 +112,14 @@ export function ResultsPage() {
         </div>
       ) : (
         <>
+          {/* ── Body strain map ────────────────────────────── */}
+          <BodyStrainMap issues={analysis.issues} />
+
+          {/* ── Detected patterns ─────────────────────────── */}
           <section className="results-section">
             <h3 className="section-label">
-              {analysis.issues.length} Pattern{analysis.issues.length !== 1 ? 's' : ''} Detected
+              {analysis.issues.length} Pattern
+              {analysis.issues.length !== 1 ? 's' : ''} Detected
             </h3>
             <div className="issue-list">
               {analysis.issues.map((issue) => (
@@ -92,6 +128,7 @@ export function ResultsPage() {
             </div>
           </section>
 
+          {/* ── Corrective plan ────────────────────────────── */}
           {plan.recommendations.length > 0 && (
             <section className="results-section">
               <h3 className="section-label">Corrective Plan</h3>
@@ -101,6 +138,7 @@ export function ResultsPage() {
                   <DrillCard
                     key={rec.drill.id}
                     rec={rec}
+                    issues={analysis.issues}
                     onSelect={() => selectDrill(rec.drill)}
                   />
                 ))}
