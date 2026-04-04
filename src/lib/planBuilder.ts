@@ -4,16 +4,19 @@
 
 import type { AnalysisResult } from '../types/analysis';
 import type { CorrectionPlan } from '../types/plan';
-import { buildRecommendations } from './recommendationEngine';
+import { buildRecommendations, buildWellnessRecommendations } from './recommendationEngine';
 
 export function buildPlan(analysis: AnalysisResult): CorrectionPlan {
-  const recommendations = buildRecommendations(analysis.issues);
+  const recommendations =
+    analysis.issues.length > 0
+      ? buildRecommendations(analysis.issues)
+      : buildWellnessRecommendations();
   const primaryIssueId = analysis.issues[0]?.id ?? null;
 
   let summary: string;
   if (analysis.issues.length === 0) {
     summary =
-      'No significant patterns were detected. Continue moving well and consider reassessing after a few weeks.';
+      'Great posture — no significant patterns detected. Keep it up with these maintenance drills to stay mobile and pain-free.';
   } else if (analysis.issues.length === 1) {
     summary = `One pattern was identified: ${analysis.issues[0]!.name}. The drill${recommendations.length === 1 ? '' : 's'} below target${recommendations.length === 1 ? 's' : ''} this directly.`;
   } else {

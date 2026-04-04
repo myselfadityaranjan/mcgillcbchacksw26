@@ -154,6 +154,49 @@ const DRILL_CUES: Record<DrillId, CueRule[]> = {
       affectedLandmarks: [LM.LEFT_SHOULDER, LM.RIGHT_SHOULDER],
     },
   ],
+
+  'chin-tuck-exercise': [
+    {
+      metric: 'headForward',
+      priority: 'major',
+      text: 'Draw chin straight back — keep pulling it in toward your spine',
+      affectedLandmarks: [LM.NOSE, LM.LEFT_EAR, LM.RIGHT_EAR],
+      arrows: [{ fromLandmark: LM.NOSE, dx: 0, dy: -0.06 }],
+    },
+    {
+      metric: 'headTilt',
+      priority: 'fine',
+      text: 'Centre your head — keep the crown pointing straight up',
+      affectedLandmarks: [LM.NOSE],
+    },
+    {
+      metric: 'shoulderSymmetry',
+      priority: 'fine',
+      text: 'Relax your shoulders — keep them level and away from the ears',
+      affectedLandmarks: [LM.LEFT_SHOULDER, LM.RIGHT_SHOULDER],
+    },
+  ],
+
+  'cat-cow-stretch': [
+    {
+      metric: 'torsoLateral',
+      priority: 'major',
+      text: 'Keep your hips directly below your shoulders — avoid shifting sideways',
+      affectedLandmarks: [LM.LEFT_SHOULDER, LM.RIGHT_SHOULDER, LM.LEFT_HIP, LM.RIGHT_HIP],
+    },
+    {
+      metric: 'shoulderSymmetry',
+      priority: 'fine',
+      text: 'Keep both shoulders at the same height — distribute weight evenly',
+      affectedLandmarks: [LM.LEFT_SHOULDER, LM.RIGHT_SHOULDER],
+    },
+    {
+      metric: 'hipSymmetry',
+      priority: 'fine',
+      text: 'Level your hips — avoid rotating or dipping to one side',
+      affectedLandmarks: [LM.LEFT_HIP, LM.RIGHT_HIP],
+    },
+  ],
 };
 
 // ── Priority ordering ─────────────────────────────────────────
@@ -161,6 +204,7 @@ const DRILL_CUES: Record<DrillId, CueRule[]> = {
 const PRIORITY_ORDER: Record<CuePriority, number> = {
   unsafe: 0,
   major: 1,
+  minor: 2,
   fine: 2,
 };
 

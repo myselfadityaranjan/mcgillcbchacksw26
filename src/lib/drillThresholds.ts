@@ -190,10 +190,66 @@ const splitSquatDrill: DrillThresholds = {
   },
 };
 
+const chinTuckExercise: DrillThresholds = {
+  metricFn(lms) {
+    const nose = lm(lms, LM.NOSE);
+    const ls   = lm(lms, LM.LEFT_SHOULDER);
+    const rs   = lm(lms, LM.RIGHT_SHOULDER);
+    const le   = lm(lms, LM.LEFT_EAR);
+    const re   = lm(lms, LM.RIGHT_EAR);
+
+    const shoulderMidX = (ls.x + rs.x) / 2;
+    const earMidX      = (le.x + re.x) / 2;
+
+    // Head forward offset from front view: ear should sit over shoulder midline
+    const headForward = Math.abs(earMidX - shoulderMidX);
+
+    // Lateral head tilt: nose should be centered over shoulder midpoint
+    const headTilt = Math.abs(nose.x - shoulderMidX);
+
+    // Shoulder level
+    const shoulderSymmetry = Math.abs(ls.y - rs.y);
+
+    return { headForward, headTilt, shoulderSymmetry };
+  },
+  thresholds: {
+    headForward:      { green: 0.03, yellow: 0.07 },
+    headTilt:         { green: 0.02, yellow: 0.04 },
+    shoulderSymmetry: { green: 0.025, yellow: 0.05 },
+  },
+};
+
+const catCowStretch: DrillThresholds = {
+  metricFn(lms) {
+    const ls = lm(lms, LM.LEFT_SHOULDER);
+    const rs = lm(lms, LM.RIGHT_SHOULDER);
+    const lh = lm(lms, LM.LEFT_HIP);
+    const rh = lm(lms, LM.RIGHT_HIP);
+
+    // Shoulder and hip level symmetry (relevant when viewed from front/side)
+    const shoulderSymmetry = Math.abs(ls.y - rs.y);
+    const hipSymmetry      = Math.abs(lh.y - rh.y);
+
+    // Torso lateral alignment: shoulder mid should be over hip mid
+    const shoulderMidX = (ls.x + rs.x) / 2;
+    const hipMidX      = (lh.x + rh.x) / 2;
+    const torsoLateral = Math.abs(shoulderMidX - hipMidX);
+
+    return { shoulderSymmetry, hipSymmetry, torsoLateral };
+  },
+  thresholds: {
+    shoulderSymmetry: { green: 0.03, yellow: 0.06 },
+    hipSymmetry:      { green: 0.03, yellow: 0.06 },
+    torsoLateral:     { green: 0.05, yellow: 0.10 },
+  },
+};
+
 export const DRILL_THRESHOLDS: Record<DrillId, DrillThresholds> = {
   'doorway-pec-stretch':   doorwayPecStretch,
   'wall-angel':            wallAngel,
   'hip-flexor-stretch':    hipFlexorStretch,
   'squat-alignment-drill': squatAlignmentDrill,
   'split-squat-drill':     splitSquatDrill,
+  'chin-tuck-exercise':    chinTuckExercise,
+  'cat-cow-stretch':       catCowStretch,
 };

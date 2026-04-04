@@ -76,7 +76,7 @@ export const useUiStore = create<UiState>()(
       toggleAlignmentLines: () =>
         set((state) => ({ showAlignmentLines: !state.showAlignmentLines })),
 
-      audioFeedback: false,
+      audioFeedback: true,
       toggleAudioFeedback: () =>
         set((state) => ({ audioFeedback: !state.audioFeedback })),
 

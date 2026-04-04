@@ -79,7 +79,7 @@ export function detectForwardHeadPosture(
   m: PostureMetrics,
   result: AssessmentResult,
 ): DetectedIssue | null {
-  if (m.sidePoseConfidence < 0.5) return null;
+  if (m.sidePoseConfidence < 0.35) return null;
 
   const raw = m.headForwardOffset;
   const MILD = 0.03;
@@ -113,7 +113,7 @@ export function detectAnteriorPelvicTilt(
   m: PostureMetrics,
   result: AssessmentResult,
 ): DetectedIssue | null {
-  if (m.sidePoseConfidence < 0.5) return null;
+  if (m.sidePoseConfidence < 0.35) return null;
 
   const raw = m.hipForwardPosition;
   const MILD = 0.025;
@@ -183,6 +183,76 @@ export function detectKneeValgus(
     metrics: {
       leftKneeValgus: m.leftKneeValgus,
       rightKneeValgus: m.rightKneeValgus,
+    },
+  };
+}
+
+/**
+ * Thoracic kyphosis — detected from side-stance when the upper
+ * back (shoulder-to-hip segment) tilts excessively forward.
+ * Measured as the actual angle from vertical in degrees.
+ */
+export function detectThoracicKyphosis(
+  m: PostureMetrics,
+  result: AssessmentResult,
+): DetectedIssue | null {
+  if (m.sidePoseConfidence < 0.35) return null;
+
+  const raw = m.thoracicAngleDeg;
+  const MILD = 15; // degrees from vertical
+  const MOD  = 25;
+
+  if (raw < MILD) return null;
+
+  return {
+    id: 'thoracic-kyphosis',
+    name: 'Thoracic Kyphosis (Rounded Upper Back)',
+    severity: severity(raw, MILD, MOD),
+    confidence: confidence(raw, MILD, 40) * m.sidePoseConfidence,
+    explanation: `Your upper back leans approximately ${raw.toFixed(0)}° forward from vertical in the side view — an ideal upright spine sits within 10°.`,
+    meaning: 'Excessive thoracic rounding compresses the chest cavity, restricts shoulder mobility, and is strongly associated with upper back and neck pain over time.',
+    affectedLandmarks: [LM.LEFT_SHOULDER, LM.RIGHT_SHOULDER, LM.LEFT_HIP, LM.RIGHT_HIP],
+    evidenceStepId: 'side-stance',
+    evidenceImageUrl: evidenceImage(result, 'side-stance'),
+    evidenceLandmarks: evidenceLandmarks(result, 'side-stance'),
+    metrics: {
+      thoracicAngleDeg: m.thoracicAngleDeg,
+      torsoForwardLean: m.torsoForwardLean,
+    },
+  };
+}
+
+/**
+ * Neck flexion posture — detected from side-stance using the actual
+ * neck angle from vertical in degrees.  More specific than
+ * headForwardOffset as it captures the full neck tilt geometry.
+ */
+export function detectNeckFlexion(
+  m: PostureMetrics,
+  result: AssessmentResult,
+): DetectedIssue | null {
+  if (m.sidePoseConfidence < 0.35) return null;
+
+  const raw = m.neckAngleDeg;
+  const MILD = 15; // degrees from vertical
+  const MOD  = 25;
+
+  if (raw < MILD) return null;
+
+  return {
+    id: 'neck-flexion',
+    name: 'Neck Flexion Posture',
+    severity: severity(raw, MILD, MOD),
+    confidence: confidence(raw, MILD, 40) * m.sidePoseConfidence,
+    explanation: `Your neck angles approximately ${raw.toFixed(0)}° forward from vertical — a healthy resting neck stays within ~10° of vertical.`,
+    meaning: 'A persistently flexed neck posture substantially increases the effective load on the cervical spine, contributing to tension headaches, trapezius tightness, and potential disc stress.',
+    affectedLandmarks: [LM.NOSE, LM.LEFT_EAR, LM.RIGHT_EAR, LM.LEFT_SHOULDER, LM.RIGHT_SHOULDER],
+    evidenceStepId: 'side-stance',
+    evidenceImageUrl: evidenceImage(result, 'side-stance'),
+    evidenceLandmarks: evidenceLandmarks(result, 'side-stance'),
+    metrics: {
+      neckAngleDeg: m.neckAngleDeg,
+      headForwardOffset: m.headForwardOffset,
     },
   };
 }

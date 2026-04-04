@@ -9,7 +9,9 @@ export type DrillId =
   | 'wall-angel'
   | 'hip-flexor-stretch'
   | 'squat-alignment-drill'
-  | 'split-squat-drill';
+  | 'split-squat-drill'
+  | 'chin-tuck-exercise'
+  | 'cat-cow-stretch';
 
 export interface Drill {
   id: DrillId;
