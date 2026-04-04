@@ -4,6 +4,7 @@ import { X, Flame, Trophy, RotateCcw } from 'lucide-react';
 import { useApp } from '../state/appContext';
 import { useLiveCoaching } from '../hooks/useLiveCoaching';
 import { speakCue, speakInstruction, stopSpeech } from '../lib/voiceCoach';
+import { useUiStore } from '../store/uiStore';
 import { Button } from '../components/ui/Button';
 import type { PoseDetectionResult } from '../lib/poseEngine';
 import type { DrillId } from '../types/plan';
@@ -15,6 +16,7 @@ interface CoachingPageProps {
 
 export function CoachingPage({ videoRef, detect }: CoachingPageProps) {
   const { state, navigate, completeCoaching } = useApp();
+  const audioFeedback = useUiStore((s) => s.audioFeedback);
   const drill     = state.selectedDrill;
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -31,18 +33,18 @@ export function CoachingPage({ videoRef, detect }: CoachingPageProps) {
 
   // Speak drill name on mount
   useEffect(() => {
-    if (drill) {
+    if (drill && audioFeedback) {
       speakInstruction(`Starting ${drill.name}. ${drill.coachingCues[0] ?? ''}`);
     }
     return () => stopSpeech();
-  }, [drill]);
+  }, [drill, audioFeedback]);
 
   // Speak cues when form goes red
   useEffect(() => {
-    if (currentFrame?.formState === 'red' && currentFrame.cue) {
+    if (audioFeedback && currentFrame?.formState === 'red' && currentFrame.cue) {
       speakCue(currentFrame.cue.text);
     }
-  }, [currentFrame?.formState, currentFrame?.cue?.text]);
+  }, [audioFeedback, currentFrame?.formState, currentFrame?.cue?.text]);
 
   useEffect(() => {
     if (session?.isComplete) {
