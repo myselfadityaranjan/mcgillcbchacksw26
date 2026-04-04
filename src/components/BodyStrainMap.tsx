@@ -30,9 +30,9 @@ const REGION_ISSUES: Record<RegionId, IssueId[]> = {
 const SEVERITY_ORDER: Record<Severity, number> = { significant: 0, moderate: 1, mild: 2 };
 
 const SEVERITY_COLOUR: Record<Severity, string> = {
-  significant: '#ff4444',
-  moderate:    '#fbbf24',
-  mild:        '#3b82f6',
+  significant: '#C05A52',
+  moderate:    '#D97B35',
+  mild:        '#5B8CB0',
 };
 
 function regionInfo(issues: DetectedIssue[], regionId: RegionId) {

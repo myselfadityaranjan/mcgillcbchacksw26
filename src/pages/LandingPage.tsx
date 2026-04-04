@@ -1,57 +1,174 @@
-// ──────────────────────────────────────────────────────────────
-// LandingPage — intro screen with pitch and disclaimer
-// ──────────────────────────────────────────────────────────────
-
+import { motion } from 'framer-motion';
+import { ArrowRight, ShieldCheck, Camera, Sparkles, Leaf, Activity } from 'lucide-react';
 import { useApp } from '../state/appContext';
+import { Button } from '../components/ui/Button';
+
+const stagger = { animate: { transition: { staggerChildren: 0.12, delayChildren: 0.15 } } };
+const fadeUp = {
+  initial: { opacity: 0, y: 24 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] as const } },
+};
+const fadeIn = {
+  initial: { opacity: 0 },
+  animate: { opacity: 1, transition: { duration: 0.8 } },
+};
+
+const features = [
+  { emoji: '📷', title: 'Camera-Based Scan', description: 'No wearables. Your webcam tracks 33 body landmarks in real time.' },
+  { emoji: '🧠', title: 'Movement Intelligence', description: 'Detects postural asymmetry and compensation patterns from how you move.' },
+  { emoji: '🎯', title: 'Live Corrective Coaching', description: 'Visual overlays, correction arrows, and instant cues during every drill.' },
+];
+
+const steps = [
+  { n: '01', label: 'Scan', sub: 'Guided movement assessment' },
+  { n: '02', label: 'Analyze', sub: 'Detect postural patterns' },
+  { n: '03', label: 'Plan', sub: 'Personalized drill prescription' },
+  { n: '04', label: 'Coach', sub: 'Live form feedback' },
+];
 
 export function LandingPage() {
   const { navigate } = useApp();
 
   return (
-    <div className="page landing-page">
-      <div className="landing-hero">
-        <div className="logo-mark">
-          <span className="logo-icon">⊕</span>
+    <div className="min-h-screen flex flex-col bg-bg overflow-x-hidden">
+      {/* Background blobs */}
+      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none" aria-hidden="true">
+        <motion.div
+          className="absolute -top-32 -left-32 w-[600px] h-[600px] bg-elevated/70 blob-shape"
+          animate={{ scale: [1, 1.04, 1], rotate: [0, 3, 0] }}
+          transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
+        />
+        <motion.div
+          className="absolute -top-16 -right-24 w-[440px] h-[440px] rounded-full bg-brand/8 blur-[80px]"
+          animate={{ scale: [1, 1.08, 1], x: [0, 10, 0] }}
+          transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut' }}
+        />
+        <motion.div
+          className="absolute bottom-[-5%] left-[25%] w-[500px] h-[300px] rounded-full bg-warning/5 blur-[100px]"
+          animate={{ scale: [1, 1.05, 1], y: [0, -12, 0] }}
+          transition={{ duration: 11, repeat: Infinity, ease: 'easeInOut' }}
+        />
+        <div
+          className="absolute inset-0 opacity-[0.025]"
+          style={{ backgroundImage: 'radial-gradient(circle, rgba(107,158,119,0.6) 1px, transparent 1px)', backgroundSize: '40px 40px' }}
+        />
+      </div>
+
+      {/* Header */}
+      <header className="flex items-center justify-between px-6 py-4 border-b border-border bg-white/60 backdrop-blur-sm sticky top-0 z-20">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-brand flex items-center justify-center shadow-[0_0_0_1px_rgba(107,158,119,0.30),0_4px_12px_rgba(107,158,119,0.15)]">
+            <Activity size={16} className="text-white" strokeWidth={2.5} />
+          </div>
+          <span className="font-bold text-text-1 tracking-tight text-base">StrainSense</span>
         </div>
-        <h1 className="landing-title">StrainSense</h1>
-        <p className="landing-tagline">
-          Real-time corrective movement intelligence
-        </p>
-      </div>
-
-      <div className="landing-pitch">
-        <div className="pitch-row">
-          <div className="pitch-card">
-            <span className="pitch-icon">👁</span>
-            <strong>Sees your body</strong>
-            <p>Computer vision detects posture asymmetry and movement patterns in real time</p>
-          </div>
-          <div className="pitch-card">
-            <span className="pitch-icon">⚡</span>
-            <strong>Identifies issues</strong>
-            <p>Flags forward head, rounded shoulders, knee collapse, and left-right imbalance</p>
-          </div>
-          <div className="pitch-card">
-            <span className="pitch-icon">🎯</span>
-            <strong>Coaches you live</strong>
-            <p>Visual overlays, correction arrows, and real-time cues while you perform drills</p>
-          </div>
+        <div className="hidden sm:flex items-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-success animate-breathe" />
+          <span className="text-xs text-text-3 font-medium">No device needed</span>
         </div>
-      </div>
+        <Button variant="ghost" size="sm" onClick={() => navigate('setup')}>
+          Try it now →
+        </Button>
+      </header>
 
-      <div className="landing-disclaimer">
-        <p>
-          <strong>Not a medical device.</strong> StrainSense is a corrective movement support tool —
-          not a diagnostic or clinical tool. Stop and seek professional care if you experience sharp pain.
-          All analysis happens in your browser; no video leaves your device.
+      {/* Hero */}
+      <main className="flex-1 flex flex-col items-center justify-center px-6 pt-20 pb-12 max-w-4xl mx-auto w-full text-center">
+        <motion.div variants={stagger} initial="initial" animate="animate" className="space-y-8">
+          <motion.div variants={fadeUp}>
+            <span className="inline-flex items-center gap-2 bg-brand/10 border border-brand/20 rounded-full px-4 py-1.5 text-brand text-xs font-semibold tracking-wide">
+              <Leaf size={11} strokeWidth={2.5} />
+              McGill CBC Hackathon · Biology & Physical Health
+            </span>
+          </motion.div>
+
+          <motion.div variants={fadeUp} className="space-y-5">
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl text-text-1 leading-[1.05] tracking-tight" style={{ fontFamily: "'DM Serif Display', serif" }}>
+              Move better.<br />
+              <span className="text-brand italic">Feel stronger.</span>
+            </h1>
+            <p className="text-lg sm:text-xl text-text-2 leading-relaxed max-w-xl mx-auto font-light">
+              Real-time computer vision detects how your body actually moves — and coaches you back into alignment.
+            </p>
+          </motion.div>
+
+          <motion.div variants={fadeUp} className="flex flex-col items-center gap-4">
+            <Button size="xl" onClick={() => navigate('setup')} rightIcon={<ArrowRight size={20} />} className="min-w-[260px] text-base font-semibold">
+              Start Your Free Assessment
+            </Button>
+            <p className="text-text-3 text-xs flex items-center gap-1.5">
+              <ShieldCheck size={12} className="text-success" />
+              All analysis stays on your device · No video stored · Free
+            </p>
+          </motion.div>
+
+          <motion.div variants={fadeIn} className="flex items-center justify-center gap-6 pt-2">
+            {[
+              { icon: Camera, label: '33 body landmarks' },
+              { icon: Sparkles, label: 'Real-time coaching' },
+              { icon: Leaf, label: 'Evidence-based drills' },
+            ].map(({ icon: Icon, label }) => (
+              <div key={label} className="flex items-center gap-1.5 text-text-3 text-xs">
+                <Icon size={12} className="text-brand" />
+                {label}
+              </div>
+            ))}
+          </motion.div>
+        </motion.div>
+      </main>
+
+      {/* Feature cards */}
+      <section className="px-6 pb-16 max-w-4xl mx-auto w-full">
+        <motion.div initial="initial" whileInView="animate" viewport={{ once: true, margin: '-60px' }} variants={stagger} className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {features.map(({ emoji, title, description }) => (
+            <motion.div key={title} variants={fadeUp} className="group bg-surface border border-border rounded-2xl p-6 shadow-sm hover:shadow-[0_4px_20px_rgba(100,80,50,0.10)] transition-all duration-300 hover:-translate-y-1">
+              <div className="w-11 h-11 rounded-xl bg-elevated flex items-center justify-center text-xl mb-4 group-hover:bg-brand/10 transition-colors duration-300">
+                {emoji}
+              </div>
+              <h3 className="text-text-1 font-semibold text-sm mb-2">{title}</h3>
+              <p className="text-text-2 text-sm leading-relaxed">{description}</p>
+            </motion.div>
+          ))}
+        </motion.div>
+      </section>
+
+      {/* How it works */}
+      <section className="px-6 pb-16 max-w-3xl mx-auto w-full">
+        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }}>
+          <h2 className="text-center text-text-3 text-xs font-semibold uppercase tracking-widest mb-10">How it works</h2>
+          <div className="relative flex items-start gap-0">
+            <div className="absolute top-5 left-[12%] right-[12%] h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+            {steps.map(({ n, label, sub }) => (
+              <div key={n} className="flex-1 flex flex-col items-center gap-3 text-center px-2 relative">
+                <div className="w-10 h-10 rounded-full bg-surface border-2 border-brand/40 flex items-center justify-center z-10 shadow-sm">
+                  <span className="text-brand text-xs font-bold font-mono">{n}</span>
+                </div>
+                <div>
+                  <p className="text-text-1 text-xs font-semibold">{label}</p>
+                  <p className="text-text-3 text-[10px] mt-0.5 leading-snug">{sub}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      </section>
+
+      {/* Bottom CTA */}
+      <section className="mx-6 mb-12 max-w-2xl lg:mx-auto w-auto rounded-2xl bg-gradient-to-br from-brand/12 to-brand/5 border border-brand/15 p-8 text-center">
+        <p className="text-2xl text-text-1 mb-3" style={{ fontFamily: "'DM Serif Display', serif" }}>
+          Your body is giving you signals.
         </p>
-      </div>
+        <p className="text-text-2 text-sm mb-6">It takes 3 minutes to understand them.</p>
+        <Button size="lg" onClick={() => navigate('setup')} rightIcon={<ArrowRight size={18} />}>
+          Begin Free Scan
+        </Button>
+      </section>
 
-      <div className="landing-cta">
-        <button className="btn primary btn-lg" onClick={() => navigate('setup')}>
-          Start Assessment
-        </button>
-        <p className="landing-time">Takes about 60 seconds</p>
+      {/* Disclaimer */}
+      <div className="px-6 pb-10 max-w-2xl mx-auto w-full">
+        <div className="bg-surface border border-border rounded-xl p-5 text-text-3 text-xs leading-relaxed">
+          <p className="font-semibold text-text-2 mb-1">Not a medical device.</p>
+          <p>StrainSense is a corrective movement support tool — not a diagnostic or clinical tool. Stop and seek professional care if you experience sharp pain. All analysis happens in your browser; no video leaves your device.</p>
+        </div>
       </div>
     </div>
   );

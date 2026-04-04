@@ -1,13 +1,10 @@
-// ──────────────────────────────────────────────────────────────
-// CoachingPage — live drill coaching with form feedback overlay
-//               + good-form streak gamification
-// The <video> lives in App.tsx (persistent). This page renders
-// the canvas overlay + coaching UI.
-// ──────────────────────────────────────────────────────────────
-
 import { useRef, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { X, Flame, Trophy, RotateCcw } from 'lucide-react';
 import { useApp } from '../state/appContext';
 import { useLiveCoaching } from '../hooks/useLiveCoaching';
+import { speakCue, speakInstruction, stopSpeech } from '../lib/voiceCoach';
+import { Button } from '../components/ui/Button';
 import type { PoseDetectionResult } from '../lib/poseEngine';
 import type { DrillId } from '../types/plan';
 
@@ -21,14 +18,31 @@ export function CoachingPage({ videoRef, detect }: CoachingPageProps) {
   const drill     = state.selectedDrill;
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
+  const drillId = (drill?.id ?? 'squat-alignment-drill') as DrillId;
+
   const { currentFrame, session, elapsed, finishSession, reset, streak } = useLiveCoaching({
     videoRef,
     canvasRef,
     detect,
-    drillId: (drill?.id ?? 'squat-alignment-drill') as DrillId,
+    drillId,
     enabled: !!drill,
     sessionDuration: drill?.durationSeconds ?? 45,
   });
+
+  // Speak drill name on mount
+  useEffect(() => {
+    if (drill) {
+      speakInstruction(`Starting ${drill.name}. ${drill.coachingCues[0] ?? ''}`);
+    }
+    return () => stopSpeech();
+  }, [drill]);
+
+  // Speak cues when form goes red
+  useEffect(() => {
+    if (currentFrame?.formState === 'red' && currentFrame.cue) {
+      speakCue(currentFrame.cue.text);
+    }
+  }, [currentFrame?.formState, currentFrame?.cue?.text]);
 
   useEffect(() => {
     if (session?.isComplete) {
@@ -44,86 +58,107 @@ export function CoachingPage({ videoRef, detect }: CoachingPageProps) {
   const totalSeconds = drill.durationSeconds;
   const remaining    = Math.max(0, totalSeconds - elapsed);
   const progress     = Math.min(1, elapsed / totalSeconds);
-  const formState    = currentFrame?.formState ?? 'green';
-  const qualityScore = currentFrame?.qualityScore ?? 100;
 
-  // Format streak seconds for display
-  const fmtStreak = (s: number) =>
-    s >= 10 ? `${Math.floor(s)}s` : `${s.toFixed(1)}s`;
+  const bodyDetected = currentFrame !== null;
+  const formState    = bodyDetected ? currentFrame.formState : null;
+  const qualityScore = bodyDetected ? currentFrame.qualityScore : 0;
+
+  const formColor =
+    formState === 'green' ? 'text-success' :
+    formState === 'yellow' ? 'text-warning' :
+    formState === 'red' ? 'text-danger' : 'text-text-3';
+
+  const fmtStreak = (s: number) => s >= 10 ? `${Math.floor(s)}s` : `${s.toFixed(1)}s`;
 
   return (
-    <div className="page coaching-page">
+    <div className="min-h-screen flex flex-col bg-[#1C1810]">
       {/* Top bar */}
-      <div className="coaching-top-bar">
+      <div className="flex items-center justify-between px-4 py-3 bg-[#1C1810]/90 backdrop-blur-sm z-10">
         <button
-          className="btn ghost btn-sm"
-          onClick={() => { reset(); navigate('drill-detail'); }}
+          onClick={() => { reset(); stopSpeech(); navigate('drill-detail'); }}
+          className="flex items-center gap-1.5 text-white/70 hover:text-white text-sm cursor-pointer bg-transparent border-none"
         >
-          ← Exit
+          <X size={16} />
+          Exit
         </button>
-        <div className="coaching-drill-name">{drill.name}</div>
-        <div className={`coaching-timer ${remaining <= 10 ? 'urgent' : ''}`}>
+        <span className="text-white font-semibold text-sm">{drill.name}</span>
+        <span className={`text-lg font-black font-mono tabular-nums ${remaining <= 10 ? 'text-danger animate-pulse' : 'text-white'}`}>
           {remaining}s
-        </div>
+        </span>
       </div>
 
-      {/* Camera feed — stream re-attached by useCamera on mount */}
-      <div className={`camera-wrap coaching-camera form-${formState}`}>
+      {/* Camera feed */}
+      <div className="flex-1 relative mx-3 mb-3 rounded-2xl overflow-hidden bg-[#252017]">
         <video ref={videoRef} playsInline muted className="camera-feed" />
         <canvas ref={canvasRef} className="skeleton-overlay" />
 
-        {!currentFrame && (
+        {!bodyDetected && (
           <div className="overlay-box prompts warn">
-            <p className="prompt-line">Step back so your full body is visible</p>
+            <p className="prompt-line">Body not detected — step back so you're fully visible</p>
           </div>
         )}
       </div>
 
-      {/* Progress bar */}
-      <div className="coaching-progress-wrap">
-        <div
-          className={`coaching-progress-bar form-bar-${formState}`}
-          style={{ width: `${progress * 100}%` }}
-        />
-      </div>
+      {/* Bottom panel */}
+      <div className="bg-bg rounded-t-3xl px-5 pt-5 pb-6 space-y-4 -mt-3 relative z-10">
+        {/* Progress bar */}
+        <div className="h-2 bg-elevated rounded-full overflow-hidden">
+          <motion.div
+            className={`h-full rounded-full ${
+              formState === 'green' ? 'bg-success' :
+              formState === 'yellow' ? 'bg-warning' :
+              formState === 'red' ? 'bg-danger' : 'bg-text-3'
+            }`}
+            style={{ width: `${progress * 100}%` }}
+            transition={{ duration: 0.3 }}
+          />
+        </div>
 
-      {/* Quality + form state row */}
-      <div className="coaching-quality-row">
-        <div className={`quality-indicator form-${formState}`}>
-          <span className="quality-dot" />
-          <span className="quality-label">
-            {formState === 'green'
-              ? 'Good form'
-              : formState === 'yellow'
-                ? 'Needs correction'
-                : 'Fix your form'}
+        {/* Quality row */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className={`w-3 h-3 rounded-full ${
+              formState === 'green' ? 'bg-success shadow-[0_0_8px_rgba(91,163,122,0.5)]' :
+              formState === 'yellow' ? 'bg-warning shadow-[0_0_8px_rgba(217,123,53,0.5)]' :
+              formState === 'red' ? 'bg-danger shadow-[0_0_8px_rgba(192,90,82,0.5)]' :
+              'bg-text-3 animate-pulse'
+            }`} />
+            <span className={`text-sm font-semibold ${formColor}`}>
+              {!bodyDetected ? 'No body detected' :
+               formState === 'green' ? 'Good form' :
+               formState === 'yellow' ? 'Needs correction' : 'Fix your form'}
+            </span>
+          </div>
+          <span className="text-2xl font-black font-mono tabular-nums text-text-1">
+            {bodyDetected ? qualityScore : '—'}
           </span>
         </div>
-        <div className="quality-score">{qualityScore}</div>
-      </div>
 
-      {/* ── Streak HUD ──────────────────────────────────────── */}
-      <div className="streak-hud">
-        <div className={`streak-current ${formState === 'green' && streak.current > 0 ? 'streak-active' : ''}`}>
-          <span className="streak-icon">🔥</span>
-          <span className="streak-val">{fmtStreak(streak.current)}</span>
-          <span className="streak-sub">streak</span>
+        {/* Streak HUD */}
+        <div className="flex items-center justify-center gap-5 py-2">
+          <div className={`flex items-center gap-2 ${formState === 'green' && streak.current > 0 ? 'text-warning' : 'text-text-3'}`}>
+            <Flame size={18} className={formState === 'green' && streak.current > 0 ? 'animate-pulse' : ''} />
+            <span className="font-bold text-sm tabular-nums">{fmtStreak(streak.current)}</span>
+            <span className="text-xs text-text-3">streak</span>
+          </div>
+          <div className="w-px h-5 bg-border" />
+          <div className="flex items-center gap-2 text-text-3">
+            <Trophy size={14} />
+            <span className="font-bold text-sm tabular-nums">{fmtStreak(streak.best)}</span>
+            <span className="text-xs">best</span>
+          </div>
+          <div className="w-px h-5 bg-border" />
+          <div className="flex items-center gap-2 text-text-3">
+            <RotateCcw size={14} />
+            <span className="font-bold text-sm tabular-nums">{streak.recoveries}</span>
+            <span className="text-xs">recoveries</span>
+          </div>
         </div>
-        <div className="streak-divider" />
-        <div className="streak-stat">
-          <span className="streak-stat-val">{fmtStreak(streak.best)}</span>
-          <span className="streak-stat-label">best</span>
-        </div>
-        <div className="streak-divider" />
-        <div className="streak-stat">
-          <span className="streak-stat-val">{streak.recoveries}</span>
-          <span className="streak-stat-label">recoveries</span>
-        </div>
-      </div>
 
-      <button className="btn ghost btn-sm coaching-finish" onClick={finishSession}>
-        Finish &amp; see score
-      </button>
+        <Button fullWidth variant="ghost" size="sm" onClick={finishSession}>
+          Finish & see score
+        </Button>
+      </div>
     </div>
   );
 }

@@ -1,8 +1,7 @@
-// ──────────────────────────────────────────────────────────────
-// SetupPage — camera permission + model loading gate
-// ──────────────────────────────────────────────────────────────
-
+import { motion } from 'framer-motion';
+import { Camera, Cpu, ChevronLeft, Check, Loader2 } from 'lucide-react';
 import { useApp } from '../state/appContext';
+import { Button } from '../components/ui/Button';
 
 interface SetupPageProps {
   videoRef: React.RefObject<HTMLVideoElement | null>;
@@ -29,68 +28,106 @@ export function SetupPage({
   const bothReady = isActive && isLoaded;
 
   return (
-    <div className="page setup-page">
-      <div className="setup-header">
-        <button className="btn ghost btn-back" onClick={() => navigate('landing')}>
-          ← Back
-        </button>
-        <h2>Camera Setup</h2>
+    <div className="max-w-lg mx-auto px-5 py-8 space-y-6">
+      <Button variant="ghost" size="sm" onClick={() => navigate('landing')} leftIcon={<ChevronLeft size={14} />}>
+        Back
+      </Button>
+
+      <div>
+        <h2 className="text-2xl font-bold text-text-1" style={{ fontFamily: "'DM Serif Display', serif" }}>
+          Camera Setup
+        </h2>
+        <p className="text-text-2 text-sm mt-1">We need your camera and pose model ready before the scan.</p>
       </div>
 
-      {/* Hidden video — keeps the stream attached to this element until the
-           AssessmentPage mounts and useCamera re-attaches to the new element */}
-      <video ref={videoRef} playsInline muted className="setup-preview" />
+      {/* Preview */}
+      <div className="relative aspect-video rounded-2xl overflow-hidden bg-elevated border border-border">
+        <video ref={videoRef} playsInline muted className="w-full h-full object-cover scale-x-[-1]" />
+        {!isActive && (
+          <div className="absolute inset-0 flex items-center justify-center bg-elevated">
+            <Camera size={48} className="text-text-3" />
+          </div>
+        )}
+      </div>
 
+      {/* Error banners */}
       {(camErr ?? modelErr) && (
-        <div className="banner error">{camErr ?? modelErr}</div>
+        <div className="bg-danger/10 border border-danger/30 rounded-xl px-4 py-3 text-danger text-sm">
+          {camErr ?? modelErr}
+        </div>
       )}
 
-      <div className="setup-checklist">
-        <div className={`check-item ${isActive ? 'done' : ''}`}>
-          <span className="check-dot" />
-          <div>
-            <strong>Camera access</strong>
-            <p>{isActive ? 'Camera active' : 'Not yet granted'}</p>
-          </div>
-        </div>
-        <div className={`check-item ${isLoaded ? 'done' : isLoading ? 'loading' : ''}`}>
-          <span className="check-dot" />
-          <div>
-            <strong>Pose model</strong>
-            <p>
-              {isLoaded
-                ? 'Ready'
-                : isLoading
-                  ? 'Loading…'
-                  : 'Waiting for camera'}
-            </p>
-          </div>
-        </div>
+      {/* Checklist */}
+      <div className="space-y-3">
+        <CheckItem
+          done={isActive}
+          loading={false}
+          icon={<Camera size={16} />}
+          title="Camera access"
+          sub={isActive ? 'Camera active' : 'Not yet granted'}
+        />
+        <CheckItem
+          done={isLoaded}
+          loading={isLoading}
+          icon={<Cpu size={16} />}
+          title="Pose model"
+          sub={isLoaded ? 'Ready' : isLoading ? 'Loading...' : 'Waiting for camera'}
+        />
       </div>
 
-      <div className="setup-tips">
-        <h3>Before you begin</h3>
-        <ul>
-          <li>Stand 6–8 feet from the camera so your full body fits in frame</li>
-          <li>Ensure the room is well lit — avoid backlighting</li>
-          <li>Wear fitted clothing so your body shape is visible</li>
-          <li>Clear space around you for the squat and balance steps</li>
+      {/* Tips */}
+      <div className="bg-surface border border-border rounded-xl p-5">
+        <h3 className="text-sm font-semibold text-text-1 mb-3">Before you begin</h3>
+        <ul className="space-y-2 text-sm text-text-2">
+          <li className="flex gap-2"><span className="text-brand mt-0.5">•</span>Stand 6-8 feet from the camera so your full body fits in frame</li>
+          <li className="flex gap-2"><span className="text-brand mt-0.5">•</span>Ensure the room is well lit — avoid backlighting</li>
+          <li className="flex gap-2"><span className="text-brand mt-0.5">•</span>Wear fitted clothing so your body shape is visible</li>
+          <li className="flex gap-2"><span className="text-brand mt-0.5">•</span>Clear space around you for the squat and balance steps</li>
         </ul>
       </div>
 
+      {/* CTA */}
       {!isActive ? (
-        <button className="btn primary btn-lg" onClick={startCam}>
+        <Button fullWidth size="lg" onClick={startCam} leftIcon={<Camera size={18} />}>
           Enable Camera
-        </button>
+        </Button>
       ) : bothReady ? (
-        <button className="btn primary btn-lg" onClick={onReady}>
+        <Button fullWidth size="lg" onClick={onReady}>
           Begin Assessment →
-        </button>
+        </Button>
       ) : (
-        <button className="btn primary btn-lg" disabled>
-          {isLoading ? 'Loading model…' : 'Waiting…'}
-        </button>
+        <Button fullWidth size="lg" disabled isLoading={isLoading}>
+          {isLoading ? 'Loading model...' : 'Waiting...'}
+        </Button>
       )}
     </div>
+  );
+}
+
+function CheckItem({ done, loading, icon, title, sub }: {
+  done: boolean;
+  loading: boolean;
+  icon: React.ReactNode;
+  title: string;
+  sub: string;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      className={`flex items-center gap-4 p-4 rounded-xl border transition-all duration-300 ${
+        done
+          ? 'bg-success/5 border-success/20'
+          : 'bg-surface border-border'
+      }`}
+    >
+      <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${done ? 'bg-success/15 text-success' : 'bg-elevated text-text-3'}`}>
+        {done ? <Check size={16} /> : loading ? <Loader2 size={16} className="animate-spin" /> : icon}
+      </div>
+      <div>
+        <p className="text-sm font-semibold text-text-1">{title}</p>
+        <p className="text-xs text-text-3">{sub}</p>
+      </div>
+    </motion.div>
   );
 }
