@@ -4,6 +4,8 @@ import { useApp } from '../state/appContext';
 import { Button } from '../components/ui/Button';
 import { BodyStrainMap } from '../components/BodyStrainMap';
 import { AnnotatedEvidence } from '../components/AnnotatedEvidence';
+import { PopulationComparison } from '../components/PopulationComparison';
+import { DailyExercisePlan } from '../components/DailyExercisePlan';
 import type { DetectedIssue, Severity } from '../types/analysis';
 import type { DrillRecommendation } from '../types/plan';
 
@@ -148,6 +150,12 @@ export function ResultsPage() {
         <>
           {/* Body Strain Map — signature visual */}
           <BodyStrainMap issues={analysis.issues} />
+
+          {/* Population comparison */}
+          <PopulationComparison issues={analysis.issues} />
+
+          {/* Weekly exercise calendar */}
+          <DailyExercisePlan issues={analysis.issues} recommendations={plan.recommendations} />
 
           {/* Detected patterns */}
           <div className="space-y-4">
