@@ -41,6 +41,17 @@ export function checkCalibration(
   stability: number,
   requiredIndices: readonly number[] = DEFAULT_REQUIRED_LANDMARKS,
 ): CalibrationStatus {
+  if (landmarks.length < 33) {
+    return {
+      isReady: false,
+      fullBodyVisible: false,
+      distance: 'ok',
+      centering: 'ok',
+      stability: false,
+      prompts: ['Position yourself in front of the camera'],
+    };
+  }
+
   const prompts: string[] = [];
 
   // 1. Full-body visibility (quorum-based so side-stance is forgiving)

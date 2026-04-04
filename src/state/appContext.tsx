@@ -55,6 +55,7 @@ type Action =
   | { type: 'ANALYSIS_COMPLETE'; analysis: AnalysisResult; plan: CorrectionPlan }
   | { type: 'SELECT_DRILL'; drill: Drill }
   | { type: 'COACHING_COMPLETE'; session: CoachingSession }
+  | { type: 'RESCAN' }
   | { type: 'RESET' };
 
 // ── Reducer ───────────────────────────────────────────────────
@@ -93,6 +94,16 @@ function reducer(state: AppState, action: Action): AppState {
         screen: 'completion',
       };
 
+    case 'RESCAN':
+      return {
+        ...state,
+        screen: 'assessment',
+        assessmentResult: null,
+        analysis: null,
+        plan: null,
+        selectedDrill: null,
+      };
+
     case 'RESET':
       return INITIAL_STATE;
 
@@ -110,6 +121,7 @@ interface AppContextValue {
   completeAnalysis: (analysis: AnalysisResult, plan: CorrectionPlan) => void;
   selectDrill: (drill: Drill) => void;
   completeCoaching: (session: CoachingSession) => void;
+  rescan: () => void;
   reset: () => void;
 }
 
@@ -125,11 +137,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const completeAnalysis   = useCallback((analysis: AnalysisResult, plan: CorrectionPlan) => dispatch({ type: 'ANALYSIS_COMPLETE', analysis, plan }),    []);
   const selectDrill        = useCallback((drill: Drill) => dispatch({ type: 'SELECT_DRILL', drill }),                                                    []);
   const completeCoaching   = useCallback((session: CoachingSession) => dispatch({ type: 'COACHING_COMPLETE', session }),                                 []);
+  const rescan             = useCallback(() => dispatch({ type: 'RESCAN' }),                                                                             []);
   const reset              = useCallback(() => dispatch({ type: 'RESET' }),                                                                              []);
 
   return (
     <AppContext.Provider
-      value={{ state, navigate, completeAssessment, completeAnalysis, selectDrill, completeCoaching, reset }}
+      value={{ state, navigate, completeAssessment, completeAnalysis, selectDrill, completeCoaching, rescan, reset }}
     >
       {children}
     </AppContext.Provider>

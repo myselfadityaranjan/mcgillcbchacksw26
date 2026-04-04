@@ -83,4 +83,22 @@ export const SKELETON_CONNECTIONS: readonly (readonly [number, number])[] = [
   // Face (minimal — nose to ears for head orientation)
   [LM.NOSE, LM.LEFT_EAR],
   [LM.NOSE, LM.RIGHT_EAR],
+
+  // Neck lines (ear → shoulder — visualises head-forward posture)
+  [LM.LEFT_EAR,  LM.LEFT_SHOULDER],
+  [LM.RIGHT_EAR, LM.RIGHT_SHOULDER],
+
+  // Left hand triangle
+  [LM.LEFT_WRIST,  LM.LEFT_PINKY],
+  [LM.LEFT_WRIST,  LM.LEFT_INDEX],
+  [LM.LEFT_PINKY,  LM.LEFT_INDEX],
+
+  // Right hand triangle
+  [LM.RIGHT_WRIST, LM.RIGHT_PINKY],
+  [LM.RIGHT_WRIST, LM.RIGHT_INDEX],
+  [LM.RIGHT_PINKY, LM.RIGHT_INDEX],
+
+  // Foot closure
+  [LM.LEFT_HEEL,  LM.LEFT_FOOT_INDEX],
+  [LM.RIGHT_HEEL, LM.RIGHT_FOOT_INDEX],
 ];

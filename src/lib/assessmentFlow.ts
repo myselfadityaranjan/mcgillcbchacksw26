@@ -285,7 +285,8 @@ export class AssessmentFlow {
     }
   }
 
-  private highestVisibilityFrame(frames: PoseFrame[]): PoseFrame {
+  private highestVisibilityFrame(frames: PoseFrame[]): PoseFrame | null {
+    if (frames.length === 0) return null;
     let best = frames[0]!;
     let bestScore = -1;
 

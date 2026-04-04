@@ -90,7 +90,7 @@ function DrillCard({
 // ── Page ──────────────────────────────────────────────────────
 
 export function ResultsPage() {
-  const { state, selectDrill, navigate, reset } = useApp();
+  const { state, selectDrill, reset, rescan } = useApp();
   const { analysis, plan } = state;
 
   if (!analysis || !plan) return null;
@@ -149,7 +149,7 @@ export function ResultsPage() {
       )}
 
       <div className="results-footer">
-        <button className="btn ghost" onClick={() => navigate('assessment')}>
+        <button className="btn ghost" onClick={rescan}>
           Re-scan
         </button>
         <button className="btn ghost btn-sm" onClick={reset}>
