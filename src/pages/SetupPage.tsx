@@ -28,7 +28,7 @@ export function SetupPage({
   const bothReady = isActive && isLoaded;
 
   return (
-    <div className="max-w-lg mx-auto px-5 py-8 space-y-6">
+    <div className="max-w-2xl mx-auto px-5 py-8 space-y-6">
       <Button variant="ghost" size="sm" onClick={() => navigate('landing')} leftIcon={<ChevronLeft size={14} />}>
         Back
       </Button>

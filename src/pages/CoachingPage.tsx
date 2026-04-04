@@ -88,7 +88,7 @@ export function CoachingPage({ videoRef, detect }: CoachingPageProps) {
       </div>
 
       {/* Camera feed */}
-      <div className="flex-1 relative mx-3 mb-3 rounded-2xl overflow-hidden bg-[#252017]">
+      <div className="flex-1 relative mx-3 mb-3 rounded-2xl overflow-hidden bg-[#252017] min-h-0">
         <video ref={videoRef} playsInline muted className="camera-feed" />
         <canvas ref={canvasRef} className="skeleton-overlay" />
 

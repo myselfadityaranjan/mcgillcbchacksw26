@@ -39,7 +39,7 @@ export function AssessmentPage({ videoRef, detect }: AssessmentPageProps) {
   const showComplete    = state.phase === 'step-complete';
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-5 space-y-4">
+    <div className="max-w-3xl mx-auto px-5 py-5 space-y-4">
       {/* Step progress */}
       <div className="flex items-center justify-center gap-2">
         {Array.from({ length: state.totalSteps }).map((_, i) => (

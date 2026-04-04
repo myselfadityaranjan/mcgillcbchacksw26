@@ -41,7 +41,7 @@ export function CompletionPage() {
   const dashOffset = circumference * (1 - finalScore / 100);
 
   return (
-    <div className="max-w-lg mx-auto px-5 py-8 space-y-8">
+    <div className="max-w-2xl mx-auto px-5 py-8 space-y-8">
       {/* Score ring */}
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}

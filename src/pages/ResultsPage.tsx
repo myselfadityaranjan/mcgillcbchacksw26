@@ -113,7 +113,7 @@ export function ResultsPage() {
   const noIssues = analysis.issues.length === 0;
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-6 space-y-8">
+    <div className="max-w-3xl mx-auto px-5 py-6 space-y-8">
       {/* Header */}
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center space-y-2">
         <h2 className="text-2xl font-bold text-text-1" style={{ fontFamily: "'DM Serif Display', serif" }}>
@@ -146,22 +146,22 @@ export function ResultsPage() {
         </motion.div>
       ) : (
         <>
-          {/* Strain map + issues */}
-          <div className="grid grid-cols-1 md:grid-cols-[160px_1fr] gap-6 items-start">
-            <BodyStrainMap issues={analysis.issues} />
-            <div className="space-y-3">
-              <div>
-                <h3 className="text-text-1 font-bold text-base">
-                  {analysis.issues.length} Pattern{analysis.issues.length !== 1 ? 's' : ''} Detected
-                </h3>
-                <p className="text-text-3 text-xs mt-0.5">
-                  Language reflects patterns consistent with these posture tendencies, not clinical diagnoses.
-                </p>
-              </div>
-              {analysis.issues.map((issue, i) => (
-                <IssueCard key={issue.id} issue={issue} rank={i + 1} />
-              ))}
+          {/* Body Strain Map — signature visual */}
+          <BodyStrainMap issues={analysis.issues} />
+
+          {/* Detected patterns */}
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-text-1 font-bold text-lg">
+                {analysis.issues.length} Pattern{analysis.issues.length !== 1 ? 's' : ''} Detected
+              </h3>
+              <p className="text-text-3 text-xs mt-1">
+                Language reflects patterns consistent with these posture tendencies, not clinical diagnoses.
+              </p>
             </div>
+            {analysis.issues.map((issue, i) => (
+              <IssueCard key={issue.id} issue={issue} rank={i + 1} />
+            ))}
           </div>
 
           {/* Corrective plan */}
