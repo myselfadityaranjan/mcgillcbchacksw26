@@ -5,7 +5,7 @@
 // ──────────────────────────────────────────────────────────────
 
 import type { PostureMetrics, DetectedIssue, Severity } from '../types/analysis';
-import type { AssessmentResult } from '../types/pose';
+import type { AssessmentResult, NormalizedLandmark } from '../types/pose';
 import { LM } from './landmarks';
 
 // ── Severity helper ──────────────────────────────────────────
@@ -20,11 +20,17 @@ function confidence(value: number, floor: number, ceiling: number): number {
   return Math.min(1, Math.max(0, (value - floor) / (ceiling - floor)));
 }
 
-// ── Evidence image helper ────────────────────────────────────
+// ── Evidence helpers ─────────────────────────────────────────
 
 function evidenceImage(result: AssessmentResult, stepId: string): string | undefined {
   const capture = result.captures.find((c) => c.stepId === stepId);
   return capture?.representativeFrame?.imageDataUrl;
+}
+
+function evidenceLandmarks(result: AssessmentResult, stepId: string): NormalizedLandmark[] | undefined {
+  const capture = result.captures.find((c) => c.stepId === stepId);
+  const lms = capture?.representativeFrame?.normalizedLandmarks;
+  return lms && lms.length >= 33 ? lms : undefined;
 }
 
 // ── Individual detectors ─────────────────────────────────────
@@ -56,6 +62,7 @@ export function detectRoundedShoulders(
     affectedLandmarks: [LM.LEFT_SHOULDER, LM.RIGHT_SHOULDER, LM.LEFT_ELBOW, LM.RIGHT_ELBOW],
     evidenceStepId: m.sidePoseConfidence > 0.4 ? 'side-stance' : 'front-stance',
     evidenceImageUrl: evidenceImage(result, m.sidePoseConfidence > 0.4 ? 'side-stance' : 'front-stance'),
+    evidenceLandmarks: evidenceLandmarks(result, m.sidePoseConfidence > 0.4 ? 'side-stance' : 'front-stance'),
     metrics: {
       torsoForwardLean: m.torsoForwardLean,
       shoulderHeightDiff: m.shoulderHeightDiff,
@@ -90,6 +97,7 @@ export function detectForwardHeadPosture(
     affectedLandmarks: [LM.NOSE, LM.LEFT_EAR, LM.RIGHT_EAR, LM.LEFT_SHOULDER, LM.RIGHT_SHOULDER],
     evidenceStepId: 'side-stance',
     evidenceImageUrl: evidenceImage(result, 'side-stance'),
+    evidenceLandmarks: evidenceLandmarks(result, 'side-stance'),
     metrics: {
       headForwardOffset: m.headForwardOffset,
       torsoForwardLean: m.torsoForwardLean,
@@ -123,6 +131,7 @@ export function detectAnteriorPelvicTilt(
     affectedLandmarks: [LM.LEFT_HIP, LM.RIGHT_HIP, LM.LEFT_KNEE, LM.RIGHT_KNEE],
     evidenceStepId: 'side-stance',
     evidenceImageUrl: evidenceImage(result, 'side-stance'),
+    evidenceLandmarks: evidenceLandmarks(result, 'side-stance'),
     metrics: {
       hipForwardPosition: m.hipForwardPosition,
       torsoForwardLean: m.torsoForwardLean,
@@ -170,6 +179,7 @@ export function detectKneeValgus(
           : [LM.LEFT_KNEE, LM.RIGHT_KNEE, LM.LEFT_HIP, LM.RIGHT_HIP],
     evidenceStepId: 'squat',
     evidenceImageUrl: evidenceImage(result, 'squat'),
+    evidenceLandmarks: evidenceLandmarks(result, 'squat'),
     metrics: {
       leftKneeValgus: m.leftKneeValgus,
       rightKneeValgus: m.rightKneeValgus,
@@ -209,6 +219,7 @@ export function detectLateralAsymmetry(
     ],
     evidenceStepId: 'front-stance',
     evidenceImageUrl: evidenceImage(result, 'front-stance'),
+    evidenceLandmarks: evidenceLandmarks(result, 'front-stance'),
     metrics: {
       shoulderHeightDiff: m.shoulderHeightDiff,
       hipHeightDiff: m.hipHeightDiff,

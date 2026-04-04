@@ -794,6 +794,330 @@ body {
 }
 .completion-actions .btn { width: 100%; max-width: 340px; }
 
+/* ── Body Strain Map ─────────────────────────────────────────── */
+.strain-map-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.strain-map-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.strain-map-body {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.strain-map-svg-wrap {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+}
+
+.strain-map-svg {
+  width: 120px;
+  height: auto;
+  filter: drop-shadow(0 0 8px rgba(0,0,0,0.5));
+}
+
+.strain-map-legend {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  justify-content: center;
+}
+
+.strain-legend-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.strain-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+.strain-legend-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.strain-legend-name {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.strain-legend-sev {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.strain-legend-conf {
+  font-weight: 400;
+  color: var(--dim);
+}
+
+/* ── Drill card: targeted issue chips ─────────────────────────── */
+.drill-targets {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.drill-targets-label {
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--dim);
+}
+
+.drill-target-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.drill-target-chip {
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 100px;
+  border: 1px solid transparent;
+}
+
+.chip-significant {
+  background: rgba(255,68,68,0.12);
+  border-color: rgba(255,68,68,0.25);
+  color: var(--red);
+}
+.chip-moderate {
+  background: rgba(251,191,36,0.12);
+  border-color: rgba(251,191,36,0.25);
+  color: var(--yellow);
+}
+.chip-mild {
+  background: rgba(59,130,246,0.12);
+  border-color: rgba(59,130,246,0.25);
+  color: var(--blue);
+}
+
+.chip-sev {
+  font-weight: 400;
+  opacity: 0.75;
+}
+
+/* ── Why this drill? block (DrillDetailPage) ──────────────────── */
+.why-block h3 {
+  color: var(--green);
+}
+
+.why-reason {
+  font-size: 0.92rem;
+  color: var(--text);
+  line-height: 1.7;
+  margin-bottom: 12px;
+}
+
+.why-targets {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.why-target-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.why-target-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.why-target-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.why-target-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.why-target-sev {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+/* ── Annotated evidence frame ────────────────────────────────── */
+.annotated-evidence {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.evidence-frame-wrap {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  line-height: 0;
+}
+
+.evidence-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  transform: scaleX(-1);
+}
+
+/* ── Streak HUD (CoachingPage) ───────────────────────────────── */
+.streak-hud {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 16px;
+}
+
+.streak-current {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 16px 0 0;
+}
+
+.streak-icon {
+  font-size: 1.1rem;
+  transition: transform 0.15s ease;
+}
+
+.streak-active .streak-icon {
+  animation: streak-pulse 1.2s ease infinite alternate;
+}
+
+@keyframes streak-pulse {
+  to { transform: scale(1.25); }
+}
+
+.streak-val {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--green);
+  min-width: 44px;
+}
+
+.streak-active .streak-val {
+  text-shadow: 0 0 12px rgba(0,255,136,0.5);
+}
+
+.streak-sub {
+  font-size: 0.75rem;
+  color: var(--dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.streak-divider {
+  width: 1px;
+  height: 28px;
+  background: var(--border);
+  margin: 0 14px;
+}
+
+.streak-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.streak-stat-val {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.streak-stat-label {
+  font-size: 0.7rem;
+  color: var(--dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ── Completion page: streak summary ─────────────────────────── */
+.completion-streak {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  text-align: left;
+  width: 100%;
+}
+
+.streak-summary-row {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-top: 10px;
+}
+
+.streak-summary-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.streak-summary-val {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--green);
+}
+
+.streak-summary-label {
+  font-size: 0.74rem;
+  color: var(--dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.streak-summary-divider {
+  width: 1px;
+  height: 36px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
 /* ── Responsive ─────────────────────────────────────────────── */
 @media (max-width: 480px) {
   .pitch-row { grid-template-columns: 1fr; }
@@ -801,4 +1125,8 @@ body {
   .stat-row { grid-template-columns: 90px 1fr 36px; }
   .score-ring { width: 100px; height: 100px; }
   .score-number { font-size: 2rem; }
+  .strain-map-body { flex-direction: column; align-items: center; }
+  .strain-map-svg { width: 100px; }
+  .streak-hud { gap: 0; padding: 8px 10px; }
+  .streak-divider { margin: 0 10px; }
 }

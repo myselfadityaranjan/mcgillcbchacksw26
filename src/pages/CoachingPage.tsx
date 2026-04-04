@@ -1,11 +1,13 @@
 // ──────────────────────────────────────────────────────────────
 // CoachingPage — live drill coaching with form feedback overlay
+//               + good-form streak gamification
+// The <video> lives in App.tsx (persistent). This page renders
+// the canvas overlay + coaching UI.
 // ──────────────────────────────────────────────────────────────
 
 import { useRef, useEffect } from 'react';
 import { useApp } from '../state/appContext';
 import { useLiveCoaching } from '../hooks/useLiveCoaching';
-import { speakCue, speakInstruction, stopSpeech } from '../lib/voiceCoach';
 import type { PoseDetectionResult } from '../lib/poseEngine';
 import type { DrillId } from '../types/plan';
 
@@ -19,33 +21,14 @@ export function CoachingPage({ videoRef, detect }: CoachingPageProps) {
   const drill     = state.selectedDrill;
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Guard: if no drill selected, bail early BEFORE hooks
-  const drillId = (drill?.id ?? 'squat-alignment-drill') as DrillId;
-  const drillEnabled = !!drill;
-
-  const { currentFrame, session, elapsed, finishSession, reset } = useLiveCoaching({
+  const { currentFrame, session, elapsed, finishSession, reset, streak } = useLiveCoaching({
     videoRef,
     canvasRef,
     detect,
-    drillId,
-    enabled: drillEnabled,
+    drillId: (drill?.id ?? 'squat-alignment-drill') as DrillId,
+    enabled: !!drill,
     sessionDuration: drill?.durationSeconds ?? 45,
   });
-
-  // Speak drill name on mount
-  useEffect(() => {
-    if (drill) {
-      speakInstruction(`Starting ${drill.name}. ${drill.coachingCues[0] ?? ''}`);
-    }
-    return () => stopSpeech();
-  }, [drill]);
-
-  // Speak cues when form state changes to red
-  useEffect(() => {
-    if (currentFrame?.formState === 'red' && currentFrame.cue) {
-      speakCue(currentFrame.cue.text);
-    }
-  }, [currentFrame?.formState, currentFrame?.cue?.text]);
 
   useEffect(() => {
     if (session?.isComplete) {
@@ -61,11 +44,12 @@ export function CoachingPage({ videoRef, detect }: CoachingPageProps) {
   const totalSeconds = drill.durationSeconds;
   const remaining    = Math.max(0, totalSeconds - elapsed);
   const progress     = Math.min(1, elapsed / totalSeconds);
+  const formState    = currentFrame?.formState ?? 'green';
+  const qualityScore = currentFrame?.qualityScore ?? 100;
 
-  // IMPORTANT: when body is lost (currentFrame null), do NOT default to green
-  const bodyDetected = currentFrame !== null;
-  const formState    = bodyDetected ? currentFrame.formState : null;
-  const qualityScore = bodyDetected ? currentFrame.qualityScore : 0;
+  // Format streak seconds for display
+  const fmtStreak = (s: number) =>
+    s >= 10 ? `${Math.floor(s)}s` : `${s.toFixed(1)}s`;
 
   return (
     <div className="page coaching-page">
@@ -73,7 +57,7 @@ export function CoachingPage({ videoRef, detect }: CoachingPageProps) {
       <div className="coaching-top-bar">
         <button
           className="btn ghost btn-sm"
-          onClick={() => { reset(); stopSpeech(); navigate('drill-detail'); }}
+          onClick={() => { reset(); navigate('drill-detail'); }}
         >
           ← Exit
         </button>
@@ -83,15 +67,14 @@ export function CoachingPage({ videoRef, detect }: CoachingPageProps) {
         </div>
       </div>
 
-      {/* Camera feed */}
-      <div className={`camera-wrap coaching-camera ${formState ? `form-${formState}` : ''}`}>
+      {/* Camera feed — stream re-attached by useCamera on mount */}
+      <div className={`camera-wrap coaching-camera form-${formState}`}>
         <video ref={videoRef} playsInline muted className="camera-feed" />
         <canvas ref={canvasRef} className="skeleton-overlay" />
 
-        {/* Body not detected — clear warning, NOT green */}
-        {!bodyDetected && (
+        {!currentFrame && (
           <div className="overlay-box prompts warn">
-            <p className="prompt-line">Body not detected — step back so you're fully visible</p>
+            <p className="prompt-line">Step back so your full body is visible</p>
           </div>
         )}
       </div>
@@ -99,26 +82,43 @@ export function CoachingPage({ videoRef, detect }: CoachingPageProps) {
       {/* Progress bar */}
       <div className="coaching-progress-wrap">
         <div
-          className={`coaching-progress-bar ${formState ? `form-bar-${formState}` : 'form-bar-green'}`}
+          className={`coaching-progress-bar form-bar-${formState}`}
           style={{ width: `${progress * 100}%` }}
         />
       </div>
 
-      {/* Quality row */}
+      {/* Quality + form state row */}
       <div className="coaching-quality-row">
-        <div className={`quality-indicator ${formState ? `form-${formState}` : 'form-lost'}`}>
+        <div className={`quality-indicator form-${formState}`}>
           <span className="quality-dot" />
           <span className="quality-label">
-            {!bodyDetected
-              ? 'No body detected'
-              : formState === 'green'
-                ? 'Good form'
-                : formState === 'yellow'
-                  ? 'Needs correction'
-                  : 'Fix your form'}
+            {formState === 'green'
+              ? 'Good form'
+              : formState === 'yellow'
+                ? 'Needs correction'
+                : 'Fix your form'}
           </span>
         </div>
-        <div className="quality-score">{bodyDetected ? qualityScore : '—'}</div>
+        <div className="quality-score">{qualityScore}</div>
+      </div>
+
+      {/* ── Streak HUD ──────────────────────────────────────── */}
+      <div className="streak-hud">
+        <div className={`streak-current ${formState === 'green' && streak.current > 0 ? 'streak-active' : ''}`}>
+          <span className="streak-icon">🔥</span>
+          <span className="streak-val">{fmtStreak(streak.current)}</span>
+          <span className="streak-sub">streak</span>
+        </div>
+        <div className="streak-divider" />
+        <div className="streak-stat">
+          <span className="streak-stat-val">{fmtStreak(streak.best)}</span>
+          <span className="streak-stat-label">best</span>
+        </div>
+        <div className="streak-divider" />
+        <div className="streak-stat">
+          <span className="streak-stat-val">{streak.recoveries}</span>
+          <span className="streak-stat-label">recoveries</span>
+        </div>
       </div>
 
       <button className="btn ghost btn-sm coaching-finish" onClick={finishSession}>
